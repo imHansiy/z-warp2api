@@ -49,6 +49,7 @@ stop_service() {
 # 停止服务
 stop_service "账号池服务" 8019 "data/pool-service.pid"
 stop_service "Warp2API服务" 8000 "data/warp2api.pid"
+stop_service "OpenAI兼容服务" 8010 "data/openai-compat.pid"
 
 echo
 echo -e "${GREEN}✅ 所有服务已停止${NC}"

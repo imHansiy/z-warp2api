@@ -11,6 +11,7 @@ import random
 from typing import List, Dict, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import requests
 
 # 添加当前目录到系统路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -112,6 +113,95 @@ class BatchRegister:
         print(f"   📁 总计: {len(results)} 个")
         
         return results
+
+    def _activate_warp_user(self, id_token: str) -> Dict[str, Any]:
+        """激活Warp用户
+        
+        使用Firebase ID Token调用Warp GraphQL API创建或获取用户
+        这是关键步骤，确保账号能够正常使用
+        """
+        if not id_token:
+            return {"success": False, "error": "缺少Firebase ID Token"}
+            
+        try:
+            url = "https://app.warp.dev/graphql/v2"
+            
+            query = """
+            mutation GetOrCreateUser($input: GetOrCreateUserInput!, $requestContext: RequestContext!) {
+              getOrCreateUser(requestContext: $requestContext, input: $input) {
+                __typename
+                ... on GetOrCreateUserOutput {
+                  uid
+                  isOnboarded
+                  __typename
+                }
+                ... on UserFacingError {
+                  error {
+                    message
+                    __typename
+                  }
+                  __typename
+                }
+              }
+            }
+            """
+            
+            data = {
+                "operationName": "GetOrCreateUser",
+                "variables": {
+                    "input": {},
+                    "requestContext": {
+                        "osContext": {},
+                        "clientContext": {}
+                    }
+                },
+                "query": query
+            }
+            
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {id_token}",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            }
+            
+            print("🌐 调用Warp GraphQL API激活用户...")
+            
+            response = requests.post(
+                url,
+                params={"op": "GetOrCreateUser"},
+                json=data,
+                headers=headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                get_or_create_user = result.get("data", {}).get("getOrCreateUser", {})
+                
+                if get_or_create_user.get("__typename") == "GetOrCreateUserOutput":
+                    uid = get_or_create_user.get("uid")
+                    is_onboarded = get_or_create_user.get("isOnboarded", False)
+                    
+                    print(f"✅ Warp用户激活成功: UID={uid}")
+                    
+                    return {
+                        "success": True,
+                        "uid": uid,
+                        "isOnboarded": is_onboarded
+                    }
+                else:
+                    error = get_or_create_user.get("error", {}).get("message", "Unknown error")
+                    print(f"❌ Warp激活失败: {error}")
+                    return {"success": False, "error": error}
+            else:
+                error_text = response.text[:500]
+                print(f"❌ Warp激活HTTP错误 {response.status_code}")
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+                
+        except Exception as e:
+            print(f"❌ Warp激活错误: {e}")
+            return {"success": False, "error": str(e)}
+
     
     def _register_single_account(self, index: int) -> Dict[str, Any]:
         """注册单个账号
@@ -135,6 +225,24 @@ class BatchRegister:
             result = registrator.run_complete_registration()
             
             if result['success']:
+                # 激活Warp用户
+                print(f"🔄 激活Warp用户: {result['final_tokens']['email']}")
+                activation_result = self._activate_warp_user(result['final_tokens']['id_token'])
+                
+                if not activation_result['success']:
+                    error_msg = f"Warp用户激活失败: {activation_result.get('error', '未知错误')}"
+                    print(error_msg)
+                    return {
+                        'success': False,
+                        'index': index,
+                        'email': result['final_tokens']['email'],
+                        'error': error_msg,
+                        'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+                        'duration': time.time() - start_time
+                    }
+                
+                print(f"✅ Warp用户激活成功: {result['final_tokens']['email']}")
+                
                 # 保存到数据库
                 try:
                     account = Account(

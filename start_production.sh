@@ -202,6 +202,45 @@ create_systemd_service() {
     fi
 }
 
+# 函数：启动OpenAI兼容服务
+start_openai_service() {
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${GREEN}3️⃣  启动OpenAI兼容服务...${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    
+    check_port 8010 "OpenAI兼容服务" || return 1
+    
+    cd warp2api-main
+    # 重要：设置HOST为0.0.0.0以便Docker容器访问
+    export HOST="0.0.0.0"
+    export PORT="8010"
+    export WARP_BRIDGE_URL="http://localhost:8000"
+    
+    nohup python3 start.py > ../logs/openai-compat.log 2>&1 &
+    local pid=$!
+    echo $pid > ../data/openai-compat.pid
+    cd ..
+    
+    echo "  PID: $pid"
+    
+    # 等待服务就绪
+    echo -n "  等待服务就绪"
+    local count=0
+    while [ $count -lt 10 ]; do
+        if kill -0 $pid 2>/dev/null; then
+            echo -n "."
+            sleep 1
+            count=$((count + 1))
+        else
+            echo -e "\n${RED}❌ OpenAI兼容服务启动失败${NC}"
+            return 1
+        fi
+    done
+    
+    echo -e "\n${GREEN}✅ OpenAI兼容服务已启动 (http://0.0.0.0:8010)${NC}"
+    return 0
+}
+
 # 主函数
 main() {
     # 检查环境
@@ -230,6 +269,13 @@ main() {
     
     echo ""
     
+    # 启动OpenAI兼容服务
+    if ! start_openai_service; then
+        echo -e "${YELLOW}⚠️  OpenAI兼容服务启动失败，但其他服务正常${NC}"
+    fi
+    
+    echo ""
+    
     # 显示状态
     show_status
     
@@ -243,7 +289,8 @@ main() {
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     echo "📝 服务地址:"
-    echo "  • Warp2API: http://localhost:8000"
+    echo "  • Warp2API主服务: http://localhost:8000
+  • OpenAI兼容API: http://0.0.0.0:8010 (Docker可访问)"
     echo "  • 账号池服务: http://localhost:8019"
     echo ""
     echo "📁 重要文件:"
@@ -258,4 +305,7 @@ main() {
 }
 
 # 执行主函数
+
+# 在主函数前添加OpenAI服务启动调用
 main
+# 函数：启动OpenAI兼容服务
