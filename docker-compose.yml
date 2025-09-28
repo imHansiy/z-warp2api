@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  warp2api:
+    build: .
+    container_name: warp2api-production
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # Warp2API主服务
+      - "8010:8010"  # OpenAI兼容API
+      - "8019:8019"  # 账号池服务
+      - "9090:9090"  # 监控指标端口（如果启用）
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+    environment:
+      # 基础配置
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+      
+      # 账号池服务配置
+      - POOL_SERVICE_URL=http://localhost:8019
+      - USE_POOL_SERVICE=true
+      - POOL_MIN_SIZE=5
+      - POOL_MAX_SIZE=50
+      
+      # Warp2API服务配置
+      - WARP_API_HOST=0.0.0.0
+      - WARP_API_PORT=8000
+      
+      # OpenAI兼容服务配置
+      - HOST=0.0.0.0
+      - PORT=8010
+      - WARP_BRIDGE_URL=http://localhost:8000
+      
+      # Firebase配置
+      - FIREBASE_API_KEY=AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs
+      
+      # 邮箱服务配置
+      - MOEMAIL_URL=https://email.959585.xyz
+      - MOEMAIL_API_KEY=mk_IpnNUYb8KgdCTJLokCgAthP7OVirjIqX
+      - EMAIL_PREFIX=warp
+      - EMAIL_EXPIRY_HOURS=1
+      
+    networks:
+      - warp2api-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # 可选：添加Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: warp2api-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - warp2api
+    networks:
+      - warp2api-network
+
+networks:
+  warp2api-network:
+    driver: bridge
