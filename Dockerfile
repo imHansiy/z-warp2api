@@ -104,7 +104,7 @@ sleep 5
 echo "[3/3] Starting OpenAI Compatible Service..."
 cd /app/warp2api-main
 export HOST=0.0.0.0
-export PORT=8010
+export PORT=8080
 export WARP_BRIDGE_URL=http://localhost:8000
 if [ -f start.py ]; then
     python start.py > /app/logs/openai-compat.log 2>&1 &
@@ -119,7 +119,7 @@ echo "All services started successfully!"
 echo "========================================"
 echo "📍 Account Pool:  http://localhost:8019"
 echo "📍 Warp2API:      http://localhost:8000"
-echo "📍 OpenAI API:    http://0.0.0.0:8010"
+echo "📍 OpenAI API:    http://0.0.0.0:8080"
 echo "========================================"
 echo ""
 echo "Monitoring logs..."
