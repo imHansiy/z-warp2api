@@ -208,12 +208,12 @@ start_openai_service() {
     echo -e "${GREEN}3️⃣  启动OpenAI兼容服务...${NC}"
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     
-    check_port 8010 "OpenAI兼容服务" || return 1
+    check_port 8080 "OpenAI兼容服务" || return 1
     
     cd warp2api-main
     # 重要：设置HOST为0.0.0.0以便Docker容器访问
     export HOST="0.0.0.0"
-    export PORT="8010"
+    export PORT="8080"
     export WARP_BRIDGE_URL="http://localhost:8000"
     
     nohup python3 start.py > ../logs/openai-compat.log 2>&1 &
@@ -237,7 +237,7 @@ start_openai_service() {
         fi
     done
     
-    echo -e "\n${GREEN}✅ OpenAI兼容服务已启动 (http://0.0.0.0:8010)${NC}"
+    echo -e "\n${GREEN}✅ OpenAI兼容服务已启动 (http://0.0.0.0:8080)${NC}"
     return 0
 }
 
@@ -290,7 +290,7 @@ main() {
     echo ""
     echo "📝 服务地址:"
     echo "  • Warp2API主服务: http://localhost:8000
-  • OpenAI兼容API: http://0.0.0.0:8010 (Docker可访问)"
+  • OpenAI兼容API: http://0.0.0.0:8080 (Docker可访问)"
     echo "  • 账号池服务: http://localhost:8019"
     echo ""
     echo "📁 重要文件:"
