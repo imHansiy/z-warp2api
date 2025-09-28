@@ -54,7 +54,7 @@ RUN mkdir -p /app/logs /app/data
 ENV PYTHONPATH=/app/warp2api-main:/app/account-pool-service:$PYTHONPATH
 
 # 暴露端口
-EXPOSE 8000 8010 8019
+EXPOSE 8000 8010 8019 8080
 
 # 创建启动脚本
 RUN cat > /app/start.sh << 'EOF'
