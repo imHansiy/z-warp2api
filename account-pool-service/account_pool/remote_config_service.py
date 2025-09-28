@@ -168,11 +168,11 @@ class RemoteConfigService:
             "firebase_api_key": "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs",
             # 添加 moemail 嵌套配置结构，匹配GUI代码的期望
             "moemail": {
-                "base_url": "https://email.959585.xyz",
-                "api_key": "mk_IpnNUYb8KgdCTJLokCgAthP7OVirjIqX"
+                "base_url": "https://apollos.dpdns.org",
+                "api_key": "mk_KXRNE7KLzg1U7lLjiehbZ_3xDAgO7rOk"
             },
             # 保留扁平化的配置作为兼容性
-            "moemail_url": "https://email.959585.xyz",
+            "moemail_url": "https://apollos.dpdns.org",
             "database": {
                 "enable_mysql": True,
                 "mysql_config": {
