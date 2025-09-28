@@ -16,9 +16,9 @@ def load_config() -> Dict[str, Any]:
         配置字典
     """
     return {
-        "api_key": "mk_IpnNUYb8KgdCTJLokCgAthP7OVirjIqX",
-        "moemail_url": "https://email.959585.xyz",
-        "moemail_api_key": "mk_IpnNUYb8KgdCTJLokCgAthP7OVirjIqX",
+        "api_key": "mk_KXRNE7KLzg1U7lLjiehbZ_3xDAgO7rOk",
+        "moemail_url": "https://apollos.dpdns.org",
+        "moemail_api_key": "mk_KXRNE7KLzg1U7lLjiehbZ_3xDAgO7rOk",
         "register_url": "https://app.warp.dev",
         "login_url": "https://app.warp.dev/login",
         "email_prefix": "warp",
