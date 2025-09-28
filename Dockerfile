@@ -42,17 +42,10 @@ RUN if [ -f "warp2api-main/pyproject.toml" ]; then \
 # 创建必要的目录
 RUN mkdir -p /app/logs /app/data
 
-# 健康检查脚本
-RUN echo '#!/bin/sh\n\
-curl -f http://localhost:8019/health || exit 1\n\
-curl -f http://localhost:8000/healthz || exit 1\n\
-curl -f http://localhost:8010/health || exit 1' > /app/healthcheck.sh && \
-    chmod +x /app/healthcheck.sh
-
 # 暴露端口
 EXPOSE 8000 8010 8019 9090
 
-# 启动脚本
+# 启动脚本 - 简化版，移除健康检查等待
 RUN echo '#!/bin/sh\n\
 echo "Starting Warp2API Services..."\n\
 \n\
@@ -68,14 +61,8 @@ python main.py > /app/logs/pool-service.log 2>&1 &\n\
 POOL_PID=$!\n\
 echo "Account Pool Service PID: $POOL_PID"\n\
 \n\
-# 等待账号池服务就绪\n\
-echo "Waiting for Account Pool Service..."\n\
-sleep 5\n\
-until curl -s http://localhost:8019/health > /dev/null 2>&1; do\n\
-    echo "Waiting for Account Pool Service to be ready..."\n\
-    sleep 2\n\
-done\n\
-echo "Account Pool Service is ready"\n\
+# 等待几秒让服务初始化\n\
+sleep 10\n\
 \n\
 # 启动Warp2API主服务\n\
 echo "Starting Warp2API Service on port 8000..."\n\
@@ -88,14 +75,8 @@ fi\n\
 WARP_PID=$!\n\
 echo "Warp2API Service PID: $WARP_PID"\n\
 \n\
-# 等待Warp2API服务就绪\n\
-echo "Waiting for Warp2API Service..."\n\
-sleep 5\n\
-until curl -s http://localhost:8000/healthz > /dev/null 2>&1; do\n\
-    echo "Waiting for Warp2API Service to be ready..."\n\
-    sleep 2\n\
-done\n\
-echo "Warp2API Service is ready"\n\
+# 等待几秒让服务初始化\n\
+sleep 10\n\
 \n\
 # 启动OpenAI兼容服务\n\
 echo "Starting OpenAI Compatible Service on port 8010..."\n\
@@ -110,7 +91,7 @@ echo "OpenAI Compatible Service PID: $OPENAI_PID"\n\
 # 显示服务状态\n\
 echo ""\n\
 echo "======================================"\n\
-echo "All services started successfully!"\n\
+echo "All services started!"\n\
 echo "======================================"\n\
 echo "🔹 Account Pool Service: http://localhost:8019"\n\
 echo "🔹 Warp2API Service: http://localhost:8000"\n\
@@ -122,10 +103,6 @@ echo "Tailing logs..."\n\
 # 保持容器运行并显示日志\n\
 tail -f /app/logs/*.log' > /app/start.sh && \
     chmod +x /app/start.sh
-
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD /app/healthcheck.sh || exit 1
 
 # 启动命令
 CMD ["/app/start.sh"]
