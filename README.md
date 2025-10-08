@@ -34,20 +34,64 @@ warp2api/
 
 确保已安装 Python 3.8+
 
-### 2. 启动服务
+### 2. 配置服务
 
+```bash
+# 复制配置文件模板（如果需要）
+cp config/production.env.example config/production.env
+
+# 编辑配置文件
+nano config/production.env
+```
+
+### 3. 启动服务
+
+#### 方法一：使用配置文件启动（推荐）
+```bash
+# 使用配置文件启动所有服务
+./start_with_config.sh
+
+# 停止所有服务
+./stop_services.sh
+```
+
+#### 方法二：使用Docker Compose
+```bash
+# 启动所有服务
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止所有服务
+docker-compose down
+```
+
+#### 方法三：传统启动方式
 ```bash
 # 一键启动所有服务
 ./start.sh
+
+# 停止所有服务
+./stop.sh
 ```
 
 服务将在以下端口运行：
 - **Warp2API**: http://localhost:8000
+- **OpenAI兼容API**: http://localhost:8080
 - **账号池服务**: http://localhost:8019
+- **监控指标**: http://localhost:9090（如果启用）
 
-### 3. 停止服务
+### 4. 停止服务
 
 ```bash
+# 如果使用配置文件启动
+./stop_services.sh
+
+# 如果使用Docker Compose
+docker-compose down
+
+# 如果使用传统方式
 ./stop.sh
 ```
 
@@ -133,27 +177,40 @@ curl http://localhost:8000/healthz
 
 ## ⚙️ 配置
 
-### 环境变量
-
-```bash
-# 账号池服务地址
-export POOL_SERVICE_URL="http://localhost:8019"
-
-# 是否使用账号池（true/false）
-export USE_POOL_SERVICE="true"
-
-# 日志级别
-export LOG_LEVEL="INFO"
-
-# 账号池配置
-export MIN_POOL_SIZE="5"    # 最少账号数
-export MAX_POOL_SIZE="50"   # 最大账号数
-```
+本项目已将所有硬编码参数提取到配置文件中，提高了配置的灵活性和可维护性。
 
 ### 配置文件
 
-- 账号池服务配置: `account-pool-service/config.py`
-- Warp2API配置: `warp2api-main/warp2protobuf/config/`
+所有配置参数都集中在 `config/production.env` 文件中，包括：
+
+- 账号池服务配置
+- Warp2API服务配置
+- OpenAI兼容服务配置
+- Firebase配置
+- 邮箱服务配置
+- 代理池配置
+- 数据库配置
+- 会话管理配置
+- 连接池配置
+- 安全配置
+- 监控配置
+- 日志配置
+
+详细的配置说明请参考：[配置管理文档](CONFIG_MANAGEMENT.md)
+
+### 环境变量优先级
+
+1. 命令行设置的环境变量（最高优先级）
+2. Docker Compose文件中的environment设置
+3. 配置文件（config/production.env）
+4. 代码中的默认值（最低优先级）
+
+### 配置验证
+
+```bash
+# 验证配置是否正确
+python verify_config_changes.py
+```
 
 ## 🔧 故障排查
 

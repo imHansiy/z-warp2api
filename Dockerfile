@@ -67,8 +67,11 @@ echo "========================================"
 
 # 加载环境变量
 if [ -f /app/config/production.env ]; then
-    echo "Loading production environment..."
-    export $(cat /app/config/production.env | grep -v '^#' | xargs)
+    echo "Loading production environment from /app/config/production.env..."
+    # 使用dotenv加载环境变量，保留已有的环境变量
+    python -c "from dotenv import load_dotenv; load_dotenv('/app/config/production.env'); print('Environment variables loaded successfully')"
+else
+    echo "WARNING: /app/config/production.env not found, using default values"
 fi
 
 # 启动账号池服务
@@ -103,6 +106,7 @@ sleep 5
 # 启动OpenAI兼容服务
 echo "[3/3] Starting OpenAI Compatible Service..."
 cd /app/warp2api-main
+# 在Docker环境中使用容器内网络
 export HOST=0.0.0.0
 export PORT=8080
 export WARP_BRIDGE_URL=http://localhost:8000
