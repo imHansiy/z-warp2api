@@ -154,8 +154,8 @@ class FirebaseAPIPool:
         }
         return cooldown_map.get(error_type, 1)
     
-    def make_firebase_request(self, url: str, method: str = "POST", 
-                            data: Optional[Dict] = None, 
+    def make_firebase_request(self, url: str, method: str = "POST",
+                            data: Optional[Dict] = None,
                             headers: Optional[Dict] = None,
                             max_retries: int = 3) -> requests.Response:
         """使用密钥池发起Firebase请求"""
@@ -167,16 +167,26 @@ class FirebaseAPIPool:
         session = requests.Session()
         session.verify = False  # 禁用SSL验证以解决Windows证书问题
         
-        # 检查是否设置了代理（仅用于本地调试）
-        import os
-        proxies = None
-        if os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY'):
-            proxy_url = os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY')
-            proxies = {
-                'http': proxy_url,
-                'https': proxy_url
-            }
-            print(f"🌐 检测到代理配置: {proxy_url}")
+        # 获取代理管理器
+        try:
+            from proxy_manager import get_proxy_manager
+            proxy_manager = get_proxy_manager()
+            proxies = proxy_manager.get_proxy_dict()
+            proxy_info = proxy_manager.get_proxy()
+            proxy_str = proxy_info.get("proxy", "N/A") if proxy_info else "无代理"
+            if proxies:
+                print(f"🌐 使用代理池代理: {proxy_str}")
+        except ImportError:
+            # 代理管理器不可用，检查环境变量
+            proxies = None
+            import os
+            if os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY'):
+                proxy_url = os.environ.get('https_proxy') or os.environ.get('HTTPS_PROXY')
+                proxies = {
+                    'http': proxy_url,
+                    'https': proxy_url
+                }
+                print(f"🌐 检测到环境变量代理配置: {proxy_url}")
         
         # 设置默认headers
         default_headers = {
@@ -233,24 +243,48 @@ class FirebaseAPIPool:
             except requests.exceptions.SSLError as e:
                 self.mark_key_failed(api_key, "ssl_error")
                 print(f"🔒 SSL错误 (尝试 {attempt + 1}): {e}")
+                if proxies:
+                    print("⚠️ 可能是代理问题，标记代理失败")
+                    try:
+                        proxy_manager.mark_proxy_failed()
+                    except:
+                        pass
                 if attempt == max_retries - 1:
                     raise
                     
             except requests.exceptions.ConnectionError as e:
                 self.mark_key_failed(api_key, "connection_error")
                 print(f"🌐 连接错误 (尝试 {attempt + 1}): {e}")
+                if proxies:
+                    print("⚠️ 可能是代理问题，标记代理失败")
+                    try:
+                        proxy_manager.mark_proxy_failed()
+                    except:
+                        pass
                 if attempt == max_retries - 1:
                     raise
                     
             except requests.exceptions.Timeout as e:
                 self.mark_key_failed(api_key, "timeout")
                 print(f"⏰ 请求超时 (尝试 {attempt + 1}): {e}")
+                if proxies:
+                    print("⚠️ 可能是代理问题，标记代理失败")
+                    try:
+                        proxy_manager.mark_proxy_failed()
+                    except:
+                        pass
                 if attempt == max_retries - 1:
                     raise
             
             except Exception as e:
                 self.mark_key_failed(api_key, "unknown")
                 print(f"❌ 未知错误 (尝试 {attempt + 1}): {e}")
+                if proxies and ("timeout" in str(e).lower() or "connection" in str(e).lower()):
+                    print("⚠️ 可能是代理问题，标记代理失败")
+                    try:
+                        proxy_manager.mark_proxy_failed()
+                    except:
+                        pass
                 if attempt == max_retries - 1:
                     raise
         

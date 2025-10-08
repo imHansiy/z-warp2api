@@ -28,15 +28,21 @@ class Config:
     BATCH_REGISTER_SIZE = int(os.getenv("BATCH_REGISTER_SIZE", 10))  # 每次批量注册10个账号
     REGISTER_TIMEOUT = int(os.getenv("REGISTER_TIMEOUT", 300))  # 注册超时时间（秒）
     
-    # 邮箱服务配置（真实可用）
-    MOEMAIL_URL = os.getenv("MOEMAIL_URL", "https://email.959585.xyz")
-    MOEMAIL_API_KEY = os.getenv("MOEMAIL_API_KEY", "mk_IpnNUYb8KgdCTJLokCgAthP7OVirjIqX")
+    # 邮箱服务配置
+    MOEMAIL_URL = os.getenv("MOEMAIL_URL", "https://moemail.007666.xyz")
+    MOEMAIL_API_KEY = os.getenv("MOEMAIL_API_KEY")  # 不设置默认值，必须从环境变量获取
     EMAIL_EXPIRY_HOURS = int(os.getenv("EMAIL_EXPIRY_HOURS", 1))
     EMAIL_PREFIX = os.getenv("EMAIL_PREFIX", "zB3w3SQB")
     
-    # Firebase配置（真实可用）
+    # 代理池配置
+    PROXY_POOL_URL = os.getenv("PROXY_POOL_URL", "https://proxy-pool.007666.xyz/")
+    USE_PROXY = os.getenv("USE_PROXY", "false").lower() == "true"
+    PROXY_MAX_FAIL_COUNT = int(os.getenv("PROXY_MAX_FAIL_COUNT", 3))
+    PROXY_REFRESH_INTERVAL = int(os.getenv("PROXY_REFRESH_INTERVAL", 300))  # 5分钟
+    
+    # Firebase配置
     FIREBASE_API_KEYS = [
-        os.getenv("FIREBASE_API_KEY_1", "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"),
+        os.getenv("FIREBASE_API_KEY_1"),  # 不设置默认值，必须从环境变量获取
         # 可以继续添加更多API密钥
     ]
     
@@ -52,8 +58,8 @@ class Config:
     OS_VERSION = os.getenv("OS_VERSION", "11 (26100)")
     
     # JWT和认证配置
-    REFRESH_TOKEN_B64 = os.getenv("REFRESH_TOKEN_B64", "Z3JhbnRfdHlwZT1yZWZyZXNoX3Rva2VuJnJlZnJlc2hfdG9rZW49QU1mLXZCeFNSbWRodmVHR0JZTTY5cDA1a0RoSW4xaTd3c2NBTEVtQzlmWURScEh6akVSOWRMN2trLWtIUFl3dlk5Uk9rbXk1MHFHVGNJaUpaNEFtODZoUFhrcFZQTDkwSEptQWY1Zlo3UGVqeXBkYmNLNHdzbzhLZjNheGlTV3RJUk9oT2NuOU56R2FTdmw3V3FSTU5PcEhHZ0JyWW40SThrclc1N1I4X3dzOHU3WGNTdzh1MERpTDlIcnBNbTBMdHdzQ2g4MWtfNmJiMkNXT0ViMWxJeDNIV1NCVGVQRldzUQ==")
-    REFRESH_URL = os.getenv("REFRESH_URL", "https://app.warp.dev/proxy/token?key=AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs")
+    REFRESH_TOKEN_B64 = os.getenv("REFRESH_TOKEN_B64")  # 不设置默认值，必须从环境变量获取
+    REFRESH_URL = os.getenv("REFRESH_URL")  # 不设置默认值，必须从环境变量获取
     
     # 日志配置
     LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")

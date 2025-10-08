@@ -5,6 +5,7 @@
 包括验证链接的处理和最终的token获取
 """
 
+import os
 import json
 import time
 import requests
@@ -110,8 +111,8 @@ class CompleteScriptRegistration:
             'Sec-Fetch-Dest': 'empty',
             'Sec-Fetch-Mode': 'cors',
             'Sec-Fetch-Site': 'cross-site',
-            'Origin': 'https://app.warp.dev',
-            'Referer': 'https://app.warp.dev/',
+            'Origin': os.getenv("WARP_BASE_URL", "https://app.warp.dev"),
+            'Referer': os.getenv("WARP_BASE_URL", "https://app.warp.dev/") + "/",
             'Sec-Ch-Ua': f'"Chromium";v="{chrome_major}", "Google Chrome";v="{chrome_major}", "Not=A?Brand";v="99"',
             'Sec-Ch-Ua-Mobile': '?0',
             'Sec-Ch-Ua-Platform': '"macOS"'
@@ -222,13 +223,13 @@ class CompleteScriptRegistration:
         print(f"📤 发送邮箱登录请求: {email_address}")
 
         try:
-            url = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode"
+            url = os.getenv("IDENTITY_TOOLKIT_BASE", "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode")
 
             payload = {
                 "requestType": "EMAIL_SIGNIN",
                 "email": email_address,
                 "clientType": "CLIENT_TYPE_WEB",
-                "continueUrl": "https://app.warp.dev/login",
+                "continueUrl": os.getenv("WARP_BASE_URL", "https://app.warp.dev") + "/login",
                 "canHandleCodeInApp": True
             }
 
@@ -332,7 +333,7 @@ class CompleteScriptRegistration:
         print(f"🔐 完成邮箱登录: {email_address}")
 
         try:
-            url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithEmailLink"
+            url = os.getenv("IDENTITY_TOOLKIT_BASE", "https://identitytoolkit.googleapis.com/v1/accounts:signInWithEmailLink")
 
             payload = {
                 "email": email_address,
@@ -403,7 +404,7 @@ class CompleteScriptRegistration:
             # 模拟访问验证链接的浏览器行为
             # 获取当前可用的API密钥
             current_api_key = self.firebase_pool.get_next_api_key()
-            verification_url = f"https://astral-field-294621.firebaseapp.com/__/auth/action?apiKey={current_api_key}&mode=signIn&oobCode={oob_code}&continueUrl=https://app.warp.dev/login&lang=en"
+            verification_url = f"{os.getenv('FIREBASE_AUTH_URL', 'https://astral-field-294621.firebaseapp.com')}/__/auth/action?apiKey={current_api_key}&mode=signIn&oobCode={oob_code}&continueUrl={os.getenv('WARP_BASE_URL', 'https://app.warp.dev')}/login&lang=en"
 
             # 设置浏览器headers（动态生成）
             browser_headers = self._generate_browser_headers()
@@ -418,11 +419,11 @@ class CompleteScriptRegistration:
             print(f"  第一步响应: {response1.status_code}, 最终URL: {response1.url}")
 
             # 如果重定向到登录页面，模拟邮箱确认
-            if "app.warp.dev/login" in response1.url and "Re-enter your email" in response1.text:
+            if f"{os.getenv('WARP_BASE_URL', 'https://app.warp.dev')}/login" in response1.url and "Re-enter your email" in response1.text:
                 print("  检测到需要邮箱确认，模拟确认流程...")
 
                 # 模拟邮箱确认请求
-                confirm_url = "https://app.warp.dev/api/auth/confirm"  # 假设的确认端点
+                confirm_url = f"{os.getenv('WARP_BASE_URL', 'https://app.warp.dev')}/api/auth/confirm"  # 假设的确认端点
                 confirm_data = {
                     "email": email_address,
                     "oobCode": oob_code,

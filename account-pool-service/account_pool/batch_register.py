@@ -8,6 +8,7 @@ import sys
 import os
 import time
 import random
+import uuid
 from typing import List, Dict, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
@@ -21,6 +22,7 @@ from complete_registration import CompleteScriptRegistration
 from firebase_api_pool import FirebaseAPIPool, make_firebase_request
 from moemail_client import MoeMailClient
 from simple_config import load_config
+from proxy_manager import get_proxy_manager
 
 # 导入数据库
 try:
@@ -46,11 +48,12 @@ class BatchRegister:
         self.config = load_config()
         if not self.config:
             print("❌ 无法加载配置，使用默认配置")
+            # 从环境变量加载默认配置
             self.config = {
-                'moemail_url': 'https://api.emailnb.com',
-                'moemail_api_key': 'your_api_key',
-                'firebase_api_keys': ['AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs'],
-                'email_expiry_hours': 1
+                'moemail_url': os.getenv('MOEMAIL_URL', 'https://moemail.007666.xyz'),
+                'moemail_api_key': os.getenv('MOEMAIL_API_KEY'),  # 不设置默认值，必须从环境变量获取
+                'firebase_api_keys': [os.getenv('FIREBASE_API_KEY_1')],  # 不设置默认值，必须从环境变量获取
+                'email_expiry_hours': int(os.getenv('EMAIL_EXPIRY_HOURS', '1'))
             }
         
         print("🤖 批量注册器初始化完成")
@@ -123,8 +126,12 @@ class BatchRegister:
         if not id_token:
             return {"success": False, "error": "缺少Firebase ID Token"}
             
+        # 获取代理管理器
+        proxy_manager = get_proxy_manager()
+        proxy_dict = proxy_manager.get_proxy_dict()
+        
         try:
-            url = "https://app.warp.dev/graphql/v2"
+            url = os.getenv("WARP_GRAPHQL_URL", "https://app.warp.dev/graphql/v2")
             
             query = """
             mutation GetOrCreateUser($input: GetOrCreateUserInput!, $requestContext: RequestContext!) {
@@ -146,13 +153,23 @@ class BatchRegister:
             }
             """
             
+            session_id = str(uuid.uuid4())
+            
             data = {
                 "operationName": "GetOrCreateUser",
                 "variables": {
-                    "input": {},
+                    "input": {
+                        "sessionId": session_id
+                    },
                     "requestContext": {
-                        "osContext": {},
-                        "clientContext": {}
+                        "osContext": {
+                            "category": os.getenv("OS_CATEGORY", "Linux"),
+                            "name": os.getenv("OS_NAME", "Ubuntu"),
+                            "version": os.getenv("OS_VERSION", "22.04")
+                        },
+                        "clientContext": {
+                            "version": os.getenv("CLIENT_VERSION", "v0.2025.08.06.08.12.stable_02")
+                        }
                     }
                 },
                 "query": query
@@ -161,21 +178,29 @@ class BatchRegister:
             headers = {
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {id_token}",
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Origin": os.getenv("WARP_BASE_URL", "https://app.warp.dev"),
+                "Referer": os.getenv("WARP_BASE_URL", "https://app.warp.dev/") + "/"
             }
             
-            print("🌐 调用Warp GraphQL API激活用户...")
+            proxy_info = proxy_manager.get_proxy()
+            proxy_str = proxy_info.get("proxy", "N/A") if proxy_info else "无代理"
+            print(f"🌐 调用Warp GraphQL API激活用户... (代理: {proxy_str})")
             
             response = requests.post(
                 url,
-                params={"op": "GetOrCreateUser"},
                 json=data,
                 headers=headers,
+                proxies=proxy_dict,
                 timeout=30
             )
             
+            print(f"🔍 响应状态码: {response.status_code}")
+            
             if response.status_code == 200:
                 result = response.json()
+                print(f"🔍 响应内容: {result}")
+                
                 get_or_create_user = result.get("data", {}).get("getOrCreateUser", {})
                 
                 if get_or_create_user.get("__typename") == "GetOrCreateUserOutput":
@@ -195,11 +220,24 @@ class BatchRegister:
                     return {"success": False, "error": error}
             else:
                 error_text = response.text[:500]
-                print(f"❌ Warp激活HTTP错误 {response.status_code}")
-                return {"success": False, "error": f"HTTP {response.status_code}"}
+                print(f"❌ Warp激活HTTP错误 {response.status_code}: {error_text}")
+                
+                # 如果是网络错误，标记代理失败
+                if response.status_code in [403, 429, 500, 502, 503, 504] or "timeout" in error_text.lower():
+                    if proxy_dict:
+                        print("⚠️ 可能是代理问题，标记代理失败")
+                        proxy_manager.mark_proxy_failed()
+                
+                return {"success": False, "error": f"HTTP {response.status_code}: {error_text}"}
                 
         except Exception as e:
             print(f"❌ Warp激活错误: {e}")
+            
+            # 如果是网络异常，标记代理失败
+            if proxy_dict and ("timeout" in str(e).lower() or "connection" in str(e).lower()):
+                print("⚠️ 可能是代理问题，标记代理失败")
+                proxy_manager.mark_proxy_failed()
+                
             return {"success": False, "error": str(e)}
 
     

@@ -18,7 +18,7 @@ PROTO_DIR = SCRIPT_DIR / "proto"
 LOGS_DIR = SCRIPT_DIR / "logs"
 
 # API configuration
-WARP_URL = "https://app.warp.dev/ai/multi-agent"
+WARP_URL = os.getenv("WARP_URL", "https://app.warp.dev/ai/multi-agent")
 
 # Environment variables with defaults
 HOST = os.getenv("HOST", "0.0.0.0")
@@ -26,10 +26,10 @@ PORT = int(os.getenv("PORT", "8002"))
 WARP_JWT = os.getenv("WARP_JWT")
 
 # Client headers configuration
-CLIENT_VERSION = "v0.2025.08.06.08.12.stable_02"
-OS_CATEGORY = "Windows"
-OS_NAME = "Windows"
-OS_VERSION = "11 (26100)"
+CLIENT_VERSION = os.getenv("CLIENT_VERSION", "v0.2025.08.06.08.12.stable_02")
+OS_CATEGORY = os.getenv("OS_CATEGORY", "Windows")
+OS_NAME = os.getenv("OS_NAME", "Windows")
+OS_VERSION = os.getenv("OS_VERSION", "11 (26100)")
 
 # Protobuf field names for text detection
 TEXT_FIELD_NAMES = ("text", "prompt", "query", "content", "message", "input")
@@ -39,5 +39,5 @@ PATH_HINT_BONUS = ("conversation", "query", "input", "user", "request", "delta")
 SYSTEM_STR = {"agent_output.text", "server_message_data", "USER_INITIATED", "agent_output", "text"}
 
 # JWT refresh configuration
-REFRESH_TOKEN_B64 = "Z3JhbnRfdHlwZT1yZWZyZXNoX3Rva2VuJnJlZnJlc2hfdG9rZW49QU1mLXZCeFNSbWRodmVHR0JZTTY5cDA1a0RoSW4xaTd3c2NBTEVtQzlmWURScEh6akVSOWRMN2trLWtIUFl3dlk5Uk9rbXk1MHFHVGNJaUpaNEFtODZoUFhrcFZQTDkwSEptQWY1Zlo3UGVqeXBkYmNLNHdzbzhLZjNheGlTV3RJUk9oT2NuOU56R2FTdmw3V3FSTU5PcEhHZ0JyWW40SThrclc1N1I4X3dzOHU3WGNTdzh1MERpTDlIcnBNbTBMdHdzQ2g4MWtfNmJiMkNXT0ViMWxJeDNIV1NCVGVQRldzUQ=="
-REFRESH_URL = "https://app.warp.dev/proxy/token?key=AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs" 
+REFRESH_TOKEN_B64 = os.getenv("REFRESH_TOKEN_B64")
+REFRESH_URL = os.getenv("REFRESH_URL")

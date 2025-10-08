@@ -8,7 +8,7 @@ dependencies = [
     "fastapi[standard]",
     "uvicorn[standard]",
     "httpx[http2]",
-    "protobuf",
+    "protobuf>=4.0.0",
     "grpcio-tools",
     "python-dotenv",
     "websockets>=15.0.1",

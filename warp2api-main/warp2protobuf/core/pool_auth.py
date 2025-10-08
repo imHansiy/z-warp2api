@@ -123,14 +123,15 @@ class PoolAuthManager:
             raise RuntimeError("账号缺少认证令牌")
         
         # 调用Warp的token刷新接口
-        refresh_url = os.getenv("REFRESH_URL", "https://app.warp.dev/proxy/token?key=AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs")
+        from ..config.settings import REFRESH_URL, CLIENT_VERSION, OS_CATEGORY, OS_NAME, OS_VERSION
+        refresh_url = REFRESH_URL
         
         payload = f"grant_type=refresh_token&refresh_token={refresh_token}".encode("utf-8")
         headers = {
-            "x-warp-client-version": os.getenv("CLIENT_VERSION", "v0.2025.08.06.08.12.stable_02"),
-            "x-warp-os-category": os.getenv("OS_CATEGORY", "Darwin"),
-            "x-warp-os-name": os.getenv("OS_NAME", "macOS"),
-            "x-warp-os-version": os.getenv("OS_VERSION", "14.0"),
+            "x-warp-client-version": CLIENT_VERSION,
+            "x-warp-os-category": OS_CATEGORY,
+            "x-warp-os-name": OS_NAME,
+            "x-warp-os-version": OS_VERSION,
             "content-type": "application/x-www-form-urlencoded",
             "accept": "*/*",
             "accept-encoding": "gzip, br",

@@ -7,6 +7,7 @@
 项目启动时获取配置并缓存到内存中供后续使用
 """
 
+import os
 import json
 import hashlib
 from typing import Dict, List, Optional, Any
@@ -17,13 +18,13 @@ import pymysql.cursors
 class RemoteConfigService:
     """远程配置服务"""
     
-    # 硬编码的数据库连接信息
+    # 从环境变量获取数据库连接信息
     DB_CONFIG = {
-        'host': '106.14.82.245',
-        'port': 3326,
-        'username': 'root', 
-        'password': '123456zw',
-        'database': 'warp',
+        'host': os.getenv('DB_HOST'),  # 不设置默认值，必须从环境变量获取
+        'port': int(os.getenv('DB_PORT', '3306')),  # 端口可以有默认值
+        'username': os.getenv('DB_USERNAME'),  # 不设置默认值，必须从环境变量获取
+        'password': os.getenv('DB_PASSWORD'),  # 不设置默认值，必须从环境变量获取
+        'database': os.getenv('DB_NAME'),  # 不设置默认值，必须从环境变量获取
         'charset': 'utf8mb4'
     }
     
@@ -152,27 +153,27 @@ class RemoteConfigService:
         return processed
     
     def _get_fallback_config(self) -> Dict[str, Any]:
-        """获取后备配置（硬编码的默认配置）"""
+        """获取后备配置（从环境变量获取的默认配置）"""
         return {
-            "api_key": "mk_IpnNUYb8KgdCTJLokCgAthP7OVirjIqX",
-            "register_url": "https://app.warp.dev",
-            "login_url": "https://app.warp.dev/login",
-            "email_prefix": "zB3w3SQB",
-            "email_expiry_hours": 1,
+            "api_key": os.getenv("MOEMAIL_API_KEY"),  # 不设置默认值，必须从环境变量获取
+            "register_url": os.getenv("WARP_BASE_URL", "https://app.warp.dev"),
+            "login_url": os.getenv("WARP_BASE_URL", "https://app.warp.dev") + "/login",
+            "email_prefix": os.getenv("EMAIL_PREFIX", "zB3w3SQB"),
+            "email_expiry_hours": int(os.getenv("EMAIL_EXPIRY_HOURS", "1")),
             "auto_refresh": True,
             "check_interval": 5,
             "max_wait_time": 300,
             "firebase_api_keys": [
-                "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"
+                os.getenv("FIREBASE_API_KEY_1")  # 不设置默认值，必须从环境变量获取
             ],
-            "firebase_api_key": "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs",
+            "firebase_api_key": os.getenv("FIREBASE_API_KEY_1"),  # 不设置默认值，必须从环境变量获取
             # 添加 moemail 嵌套配置结构，匹配GUI代码的期望
             "moemail": {
-                "base_url": "https://apollos.dpdns.org",
-                "api_key": "mk_KXRNE7KLzg1U7lLjiehbZ_3xDAgO7rOk"
+                "base_url": os.getenv("MOEMAIL_URL", "https://moemail.007666.xyz"),
+                "api_key": os.getenv("MOEMAIL_API_KEY")  # 不设置默认值，必须从环境变量获取
             },
             # 保留扁平化的配置作为兼容性
-            "moemail_url": "https://apollos.dpdns.org",
+            "moemail_url": os.getenv("MOEMAIL_URL", "https://moemail.007666.xyz"),
             "database": {
                 "enable_mysql": True,
                 "mysql_config": {

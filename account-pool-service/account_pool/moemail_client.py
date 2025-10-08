@@ -49,6 +49,19 @@ class MoeMailClient:
         self.api_key = api_key
         self.session = requests.Session()
         
+        # 获取代理管理器
+        self.proxies = None
+        try:
+            from proxy_manager import get_proxy_manager
+            proxy_manager = get_proxy_manager()
+            self.proxies = proxy_manager.get_proxy_dict()
+            proxy_info = proxy_manager.get_proxy()
+            proxy_str = proxy_info.get("proxy", "N/A") if proxy_info else "无代理"
+            if self.proxies:
+                print(f"🌐 邮箱客户端使用代理: {proxy_str}")
+        except ImportError:
+            pass
+        
         # 配置连接池和重试策略
         retry_strategy = Retry(
             total=3,  # 总重试次数
@@ -79,10 +92,17 @@ class MoeMailClient:
     def get_config(self) -> Dict[str, Any]:
         """获取系统配置"""
         try:
-            response = self.session.get(f"{self.base_url}/api/config")
+            response = self.session.get(f"{self.base_url}/api/config", proxies=self.proxies)
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
+            if self.proxies:
+                try:
+                    from proxy_manager import get_proxy_manager
+                    proxy_manager = get_proxy_manager()
+                    proxy_manager.mark_proxy_failed()
+                except:
+                    pass
             raise Exception(f"获取配置失败: {e}")
     
     def create_email(self, name: str = None, domain: str = "moemail.app", 
@@ -119,7 +139,8 @@ class MoeMailClient:
         try:
             response = self.session.post(
                 f"{self.base_url}/api/emails/generate",
-                json=data
+                json=data,
+                proxies=self.proxies
             )
             response.raise_for_status()
             result = response.json()
@@ -131,12 +152,19 @@ class MoeMailClient:
                 expires_at=""  # API不直接返回过期时间
             )
         except requests.RequestException as e:
+            if self.proxies:
+                try:
+                    from proxy_manager import get_proxy_manager
+                    proxy_manager = get_proxy_manager()
+                    proxy_manager.mark_proxy_failed()
+                except:
+                    pass
             raise Exception(f"创建邮箱失败: {e}")
     
     def get_emails(self) -> List[TempEmail]:
         """获取邮箱列表"""
         try:
-            response = self.session.get(f"{self.base_url}/api/emails")
+            response = self.session.get(f"{self.base_url}/api/emails", proxies=self.proxies)
             response.raise_for_status()
             result = response.json()
             
@@ -151,6 +179,13 @@ class MoeMailClient:
             
             return emails
         except requests.RequestException as e:
+            if self.proxies:
+                try:
+                    from proxy_manager import get_proxy_manager
+                    proxy_manager = get_proxy_manager()
+                    proxy_manager.mark_proxy_failed()
+                except:
+                    pass
             raise Exception(f"获取邮箱列表失败: {e}")
     
     def get_messages(self, email_id: str, limit: int = 10) -> List[EmailMessage]:
@@ -163,13 +198,14 @@ class MoeMailClient:
             }
             
             response = self.session.get(
-                f"{self.base_url}/api/emails/{email_id}/messages", 
-                params=params
+                f"{self.base_url}/api/emails/{email_id}/messages",
+                params=params,
+                proxies=self.proxies
             )
             
             # 如果上面的端点不存在，尝试原来的端点
             if response.status_code == 404:
-                response = self.session.get(f"{self.base_url}/api/emails/{email_id}")
+                response = self.session.get(f"{self.base_url}/api/emails/{email_id}", proxies=self.proxies)
             
             response.raise_for_status()
             result = response.json()
@@ -208,7 +244,7 @@ class MoeMailClient:
             result = None
             for endpoint in endpoints:
                 try:
-                    response = self.session.get(endpoint)
+                    response = self.session.get(endpoint, proxies=self.proxies)
                     if response.status_code == 200:
                         result = response.json()
                         break
@@ -217,7 +253,7 @@ class MoeMailClient:
             
             if not result:
                 # 如果所有端点都失败，抛出异常
-                response = self.session.get(f"{self.base_url}/api/emails/{email_id}/{message_id}")
+                response = self.session.get(f"{self.base_url}/api/emails/{email_id}/{message_id}", proxies=self.proxies)
                 response.raise_for_status()
                 result = response.json()
             
@@ -238,11 +274,18 @@ class MoeMailClient:
     def delete_email(self, email_id: str) -> bool:
         """删除邮箱"""
         try:
-            response = self.session.delete(f"{self.base_url}/api/emails/{email_id}")
+            response = self.session.delete(f"{self.base_url}/api/emails/{email_id}", proxies=self.proxies)
             response.raise_for_status()
             result = response.json()
             return result.get("success", False)
         except requests.RequestException as e:
+            if self.proxies:
+                try:
+                    from proxy_manager import get_proxy_manager
+                    proxy_manager = get_proxy_manager()
+                    proxy_manager.mark_proxy_failed()
+                except:
+                    pass
             raise Exception(f"删除邮箱失败: {e}")
     
     def wait_for_email(self, email_id: str, timeout: int = 300, 

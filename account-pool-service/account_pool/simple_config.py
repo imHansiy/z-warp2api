@@ -5,6 +5,7 @@
 不依赖远程数据库，直接使用本地配置
 """
 
+import os
 from typing import Dict, Any, Optional
 
 
@@ -16,24 +17,24 @@ def load_config() -> Dict[str, Any]:
         配置字典
     """
     return {
-        "api_key": "mk_KXRNE7KLzg1U7lLjiehbZ_3xDAgO7rOk",
-        "moemail_url": "https://apollos.dpdns.org",
-        "moemail_api_key": "mk_KXRNE7KLzg1U7lLjiehbZ_3xDAgO7rOk",
-        "register_url": "https://app.warp.dev",
-        "login_url": "https://app.warp.dev/login",
-        "email_prefix": "warp",
-        "email_expiry_hours": 1,
+        "api_key": os.getenv("MOEMAIL_API_KEY"),  # 不设置默认值，必须从环境变量获取
+        "moemail_url": os.getenv("MOEMAIL_URL", "https://moemail.007666.xyz"),
+        "moemail_api_key": os.getenv("MOEMAIL_API_KEY"),  # 不设置默认值，必须从环境变量获取
+        "register_url": os.getenv("WARP_BASE_URL", "https://app.warp.dev"),
+        "login_url": os.getenv("WARP_BASE_URL", "https://app.warp.dev") + "/login",
+        "email_prefix": os.getenv("EMAIL_PREFIX", "warp"),
+        "email_expiry_hours": int(os.getenv("EMAIL_EXPIRY_HOURS", "1")),
         "auto_refresh": True,
         "check_interval": 5,
         "max_wait_time": 300,
         "firebase_api_keys": [
-            "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"
+            os.getenv("FIREBASE_API_KEY_1")  # 不设置默认值，必须从环境变量获取
         ],
-        "firebase_api_key": "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs",
+        "firebase_api_key": os.getenv("FIREBASE_API_KEY_1"),  # 不设置默认值，必须从环境变量获取
         # moemail 嵌套结构
         "moemail": {
-            "base_url": "https://email.959585.xyz",
-            "api_key": "mk_IpnNUYb8KgdCTJLokCgAthP7OVirjIqX"
+            "base_url": os.getenv("MOEMAIL_URL", "https://moemail.007666.xyz"),
+            "api_key": os.getenv("MOEMAIL_API_KEY")  # 不设置默认值，必须从环境变量获取
         }
     }
 

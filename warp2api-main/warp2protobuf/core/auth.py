@@ -186,8 +186,8 @@ async def refresh_jwt_if_needed() -> bool:
 
 # ============ Anonymous token acquisition (quota refresh) ============
 
-_ANON_GQL_URL = "https://app.warp.dev/graphql/v2?op=CreateAnonymousUser"
-_IDENTITY_TOOLKIT_BASE = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken"
+_ANON_GQL_URL = os.getenv("ANON_GQL_URL", "https://app.warp.dev/graphql/v2?op=CreateAnonymousUser")
+_IDENTITY_TOOLKIT_BASE = os.getenv("IDENTITY_TOOLKIT_BASE", "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken")
 
 
 def _extract_google_api_key_from_refresh_url() -> str:
