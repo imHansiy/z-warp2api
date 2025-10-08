@@ -37,12 +37,14 @@ def decode_jwt_payload(token: str) -> dict:
         return {}
 
 
-def is_token_expired(token: str, buffer_minutes: int = 5) -> bool:
+def is_token_expired(token: str, buffer_minutes: int = None) -> bool:
     payload = decode_jwt_payload(token)
     if not payload or 'exp' not in payload:
         return True
     expiry_time = payload['exp']
     current_time = time.time()
+    if buffer_minutes is None:
+        buffer_minutes = int(os.getenv("TOKEN_EXPIRY_BUFFER_MINUTES", "5"))
     buffer_time = buffer_minutes * 60
     return (expiry_time - current_time) <= buffer_time
 
@@ -71,7 +73,8 @@ async def refresh_jwt_token() -> dict:
         "content-length": str(len(payload))
     }
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        timeout = float(os.getenv("TOKEN_REFRESH_TIMEOUT", "30.0"))
+        async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
                 REFRESH_URL,
                 headers=headers,
@@ -121,7 +124,8 @@ async def check_and_refresh_token() -> bool:
             return update_env_file(token_data["access_token"])
         return False
     logger.debug("Checking current JWT token expiration...")
-    if is_token_expired(current_jwt, buffer_minutes=15):
+    buffer_minutes = int(os.getenv("TOKEN_REFRESH_BUFFER_MINUTES", "15"))
+    if is_token_expired(current_jwt, buffer_minutes=buffer_minutes):
         logger.info("JWT token is expired or expiring soon, refreshing...")
         token_data = await refresh_jwt_token()
         if token_data and "access_token" in token_data:
@@ -158,7 +162,8 @@ async def get_valid_jwt() -> str:
             jwt = os.getenv("WARP_JWT")
         if not jwt:
             raise RuntimeError("WARP_JWT is not set and refresh failed")
-    if is_token_expired(jwt, buffer_minutes=2):
+    buffer_minutes = int(os.getenv("TOKEN_VALIDITY_CHECK_BUFFER", "2"))
+    if is_token_expired(jwt, buffer_minutes=buffer_minutes):
         logger.info("JWT token is expired or expiring soon, attempting to refresh...")
         if await check_and_refresh_token():
             _load(override=True)
@@ -248,7 +253,8 @@ async def _create_anonymous_user() -> dict:
         }
     }
     body = {"query": query, "variables": variables, "operationName": "CreateAnonymousUser"}
-    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as client:
+    timeout = float(os.getenv("ANON_USER_TIMEOUT", "30.0"))
+    async with httpx.AsyncClient(timeout=httpx.Timeout(timeout)) as client:
         resp = await client.post(_ANON_GQL_URL, headers=headers, json=body)
         if resp.status_code != 200:
             raise RuntimeError(f"CreateAnonymousUser failed: HTTP {resp.status_code} {resp.text[:200]}")
@@ -258,7 +264,8 @@ async def _create_anonymous_user() -> dict:
 
 async def _exchange_id_token_for_refresh_token(id_token: str) -> dict:
     key = _extract_google_api_key_from_refresh_url()
-    url = f"{_IDENTITY_TOOLKIT_BASE}?key={key}" if key else f"{_IDENTITY_TOOLKIT_BASE}?key=AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"
+    default_key = os.getenv("FIREBASE_DEFAULT_API_KEY", "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs")
+    url = f"{_IDENTITY_TOOLKIT_BASE}?key={key}" if key else f"{_IDENTITY_TOOLKIT_BASE}?key={default_key}"
     headers = {
         "accept-encoding": "gzip, br",
         "content-type": "application/x-www-form-urlencoded",
@@ -271,7 +278,8 @@ async def _exchange_id_token_for_refresh_token(id_token: str) -> dict:
         "returnSecureToken": "true",
         "token": id_token,
     }
-    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as client:
+    timeout = float(os.getenv("IDENTITY_TOOLKIT_TIMEOUT", "30.0"))
+    async with httpx.AsyncClient(timeout=httpx.Timeout(timeout)) as client:
         resp = await client.post(url, headers=headers, data=form)
         if resp.status_code != 200:
             raise RuntimeError(f"signInWithCustomToken failed: HTTP {resp.status_code} {resp.text[:200]}")
@@ -313,7 +321,8 @@ async def acquire_anonymous_access_token() -> str:
         "accept-encoding": "gzip, br",
         "content-length": str(len(payload))
     }
-    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as client:
+    timeout = float(os.getenv("ACCESS_TOKEN_TIMEOUT", "30.0"))
+    async with httpx.AsyncClient(timeout=httpx.Timeout(timeout)) as client:
         resp = await client.post(REFRESH_URL, headers=headers, content=payload)
         if resp.status_code != 200:
             raise RuntimeError(f"Acquire access_token failed: HTTP {resp.status_code} {resp.text[:200]}")

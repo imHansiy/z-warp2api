@@ -59,7 +59,8 @@ class ProxyManager:
             logger.info("从代理池获取新代理...")
             
             # 尝试获取HTTPS代理
-            response = requests.get(f"{self.base_url}/get/", params={"type": "https"}, timeout=10)
+            timeout = int(os.getenv("PROXY_REQUEST_TIMEOUT", "10"))
+            response = requests.get(f"{self.base_url}/get/", params={"type": "https"}, timeout=timeout)
             
             if response.status_code == 200:
                 data = response.json()
@@ -80,7 +81,8 @@ class ProxyManager:
                     logger.warning(f"代理池返回无代理: {data}")
                     
                     # 尝试获取HTTP代理
-                    response = requests.get(f"{self.base_url}/get/", timeout=10)
+                    timeout = int(os.getenv("PROXY_REQUEST_TIMEOUT", "10"))
+                    response = requests.get(f"{self.base_url}/get/", timeout=timeout)
                     if response.status_code == 200:
                         data = response.json()
                         if "proxy" in data:
@@ -155,7 +157,8 @@ class ProxyManager:
             logger.info(f"删除失败代理: {proxy}")
             
             # 调用删除API
-            response = requests.get(f"{self.base_url}/delete/", params={"proxy": proxy}, timeout=10)
+            timeout = int(os.getenv("PROXY_REQUEST_TIMEOUT", "10"))
+            response = requests.get(f"{self.base_url}/delete/", params={"proxy": proxy}, timeout=timeout)
             
             if response.status_code == 200:
                 data = response.json()
@@ -178,7 +181,8 @@ class ProxyManager:
             代理池统计信息
         """
         try:
-            response = requests.get(f"{self.base_url}/count/", timeout=10)
+            timeout = int(os.getenv("PROXY_REQUEST_TIMEOUT", "10"))
+            response = requests.get(f"{self.base_url}/count/", timeout=timeout)
             
             if response.status_code == 200:
                 return response.json()
@@ -217,10 +221,11 @@ class ProxyManager:
                 "https": f"http://{proxy}"
             }
             
+            proxy_test_url = os.getenv("PROXY_TEST_URL", "https://httpbin.org/ip")
             response = requests.get(
-                "https://httpbin.org/ip",
+                proxy_test_url,
                 proxies=proxy_dict,
-                timeout=10
+                timeout=int(os.getenv("PROXY_TEST_TIMEOUT", "10"))
             )
             
             if response.status_code == 200:

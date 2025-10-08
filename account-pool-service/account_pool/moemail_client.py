@@ -5,6 +5,7 @@ MoeMail API 客户端
 简单易用的临时邮箱服务客户端
 """
 
+import os
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -86,7 +87,7 @@ class MoeMailClient:
             'X-API-Key': api_key,
             'Content-Type': 'application/json',
             'Connection': 'keep-alive',  # 启用Keep-Alive
-            'User-Agent': 'MoeMailClient/1.0'
+            'User-Agent': os.getenv("MOEMAIL_CLIENT_VERSION", "MoeMailClient/1.0")
         })
     
     def get_config(self) -> Dict[str, Any]:
@@ -105,14 +106,14 @@ class MoeMailClient:
                     pass
             raise Exception(f"获取配置失败: {e}")
     
-    def create_email(self, name: str = None, domain: str = "moemail.app", 
+    def create_email(self, name: str = None, domain: str = None,
                     expiry_hours: int = 1) -> TempEmail:
         """
         创建临时邮箱
         
         Args:
             name: 邮箱前缀（可选）
-            domain: 邮箱域名
+            domain: 邮箱域名，默认从环境变量MOEMAIL_DOMAIN获取
             expiry_hours: 有效期（小时），支持 1, 24, 168（7天）, 0（永久），默认1小时
         
         Returns:
@@ -128,6 +129,10 @@ class MoeMailClient:
         
         expiry_time = expiry_map.get(expiry_hours, 3600000)  # 默认1小时
         
+        # 使用环境变量中的域名作为默认值
+        if domain is None:
+            domain = os.getenv("MOEMAIL_DOMAIN", "moemail.app")
+            
         data = {
             "expiryTime": expiry_time,
             "domain": domain
@@ -288,15 +293,15 @@ class MoeMailClient:
                     pass
             raise Exception(f"删除邮箱失败: {e}")
     
-    def wait_for_email(self, email_id: str, timeout: int = 300, 
-                      check_interval: int = 5, progress_callback: Callable = None) -> Optional[EmailMessage]:
+    def wait_for_email(self, email_id: str, timeout: int = None,
+                      check_interval: int = None, progress_callback: Callable = None) -> Optional[EmailMessage]:
         """
         等待接收邮件（优化版本 - 忽略分页，直接获取最新邮件）
         
         Args:
             email_id: 邮箱ID
-            timeout: 超时时间（秒）
-            check_interval: 检查间隔（秒）
+            timeout: 超时时间（秒），默认从环境变量EMAIL_TIMEOUT获取
+            check_interval: 检查间隔（秒），默认从环境变量EMAIL_CHECK_INTERVAL获取
             progress_callback: 进度回调函数
             
         Returns:
@@ -304,6 +309,12 @@ class MoeMailClient:
         """
         if progress_callback is None:
             progress_callback = print
+            
+        # 设置默认值
+        if timeout is None:
+            timeout = int(os.getenv("EMAIL_TIMEOUT", "300"))
+        if check_interval is None:
+            check_interval = int(os.getenv("EMAIL_CHECK_INTERVAL", "5"))
             
         start_time = time.time()
         attempt_count = 0

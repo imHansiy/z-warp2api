@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import os
 
-BRIDGE_BASE_URL = os.getenv("WARP_BRIDGE_URL", "http://127.0.0.1:8000")
+bridge_host = os.getenv("WARP_BRIDGE_HOST", "127.0.0.1")
+bridge_port = os.getenv("WARP_BRIDGE_PORT", "8000")
+BRIDGE_BASE_URL = os.getenv("WARP_BRIDGE_URL", f"http://{bridge_host}:{bridge_port}")
 FALLBACK_BRIDGE_URLS = [
     BRIDGE_BASE_URL,
-    "http://127.0.0.1:8000",
+    f"http://{bridge_host}:{bridge_port}",
 ]
 
 WARMUP_INIT_RETRIES = int(os.getenv("WARP_COMPAT_INIT_RETRIES", "10"))

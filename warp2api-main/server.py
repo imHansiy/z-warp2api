@@ -7,6 +7,7 @@ Warp Protobuf编解码服务器启动文件
 """
 
 from typing import Dict, Optional, Tuple
+import os
 import base64
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -583,7 +584,7 @@ def main():
 
     # 启动服务器
     try:
-        uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", access_log=True)
+        uvicorn.run(app, host=os.getenv("WARP_API_HOST", "0.0.0.0"), port=int(os.getenv("WARP_API_PORT", "8000")), log_level="info", access_log=True)
     except KeyboardInterrupt:
         logger.info("服务器被用户停止")
     except Exception as e:

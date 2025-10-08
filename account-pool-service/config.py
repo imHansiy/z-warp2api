@@ -32,7 +32,7 @@ class Config:
     MOEMAIL_URL = os.getenv("MOEMAIL_URL", "https://moemail.007666.xyz")
     MOEMAIL_API_KEY = os.getenv("MOEMAIL_API_KEY")  # 不设置默认值，必须从环境变量获取
     EMAIL_EXPIRY_HOURS = int(os.getenv("EMAIL_EXPIRY_HOURS", 1))
-    EMAIL_PREFIX = os.getenv("EMAIL_PREFIX", "zB3w3SQB")
+    EMAIL_PREFIX = os.getenv("EMAIL_PREFIX", "warp")
     
     # 代理池配置
     PROXY_POOL_URL = os.getenv("PROXY_POOL_URL", "https://proxy-pool.007666.xyz/")
@@ -79,7 +79,8 @@ class Config:
     def get_firebase_api_keys(cls) -> list:
         """获取所有Firebase API密钥"""
         keys = [key for key in cls.FIREBASE_API_KEYS if key]
-        return keys if keys else ["AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"]
+        default_key = os.getenv("FIREBASE_DEFAULT_API_KEY", "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs")
+        return keys if keys else [default_key]
     
     @classmethod
     def to_dict(cls) -> Dict[str, Any]:

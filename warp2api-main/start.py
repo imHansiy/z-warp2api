@@ -16,7 +16,7 @@ async def main():
     warp_thread = threading.Thread(
         target=uvicorn.run,
         args=(warp_app,),
-        kwargs={"host": "0.0.0.0", "port": 8000, "log_level": "info", "access_log": True},
+        kwargs={"host": os.getenv("WARP_API_HOST", "0.0.0.0"), "port": int(os.getenv("WARP_API_PORT", "8000")), "log_level": "info", "access_log": True},
         daemon=True
     )
     warp_thread.start()

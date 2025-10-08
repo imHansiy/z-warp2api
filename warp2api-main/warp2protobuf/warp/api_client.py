@@ -83,17 +83,18 @@ async def send_protobuf_to_warp_api(
             verify_opt = False
             logger.warning("TLS verification disabled via WARP_INSECURE_TLS for Warp API client")
 
-        async with httpx.AsyncClient(http2=True, timeout=httpx.Timeout(60.0), verify=verify_opt, trust_env=True) as client:
+        timeout = float(os.getenv("WARP_API_TIMEOUT", "60.0"))
+        async with httpx.AsyncClient(http2=True, timeout=httpx.Timeout(timeout), verify=verify_opt, trust_env=True) as client:
             # 最多尝试两次：第一次失败且为配额429时申请匿名token并重试一次
             for attempt in range(2):
                 jwt = await get_valid_jwt() if attempt == 0 else jwt  # keep existing unless refreshed explicitly
                 headers = {
                     "accept": "text/event-stream",
                     "content-type": "application/x-protobuf", 
-                    "x-warp-client-version": "v0.2025.08.06.08.12.stable_02",
-                    "x-warp-os-category": "Windows",
-                    "x-warp-os-name": "Windows", 
-                    "x-warp-os-version": "11 (26100)",
+                    "x-warp-client-version": os.getenv("CLIENT_VERSION", "v0.2025.08.06.08.12.stable_02"),
+                    "x-warp-os-category": os.getenv("OS_CATEGORY", "Windows"),
+                    "x-warp-os-name": os.getenv("OS_NAME", "Windows"),
+                    "x-warp-os-version": os.getenv("OS_VERSION", "11 (26100)"),
                     "authorization": f"Bearer {jwt}",
                     "content-length": str(len(protobuf_bytes)),
                 }
@@ -267,17 +268,18 @@ async def send_protobuf_to_warp_api_parsed(protobuf_bytes: bytes) -> tuple[str, 
             verify_opt = False
             logger.warning("TLS verification disabled via WARP_INSECURE_TLS for Warp API client")
 
-        async with httpx.AsyncClient(http2=True, timeout=httpx.Timeout(60.0), verify=verify_opt, trust_env=True) as client:
+        timeout = float(os.getenv("WARP_API_TIMEOUT", "60.0"))
+        async with httpx.AsyncClient(http2=True, timeout=httpx.Timeout(timeout), verify=verify_opt, trust_env=True) as client:
             # 最多尝试两次：第一次失败且为配额429时申请匿名token并重试一次
             for attempt in range(2):
                 jwt = await get_valid_jwt() if attempt == 0 else jwt  # keep existing unless refreshed explicitly
                 headers = {
                     "accept": "text/event-stream",
                     "content-type": "application/x-protobuf", 
-                    "x-warp-client-version": "v0.2025.08.06.08.12.stable_02",
-                    "x-warp-os-category": "Windows",
-                    "x-warp-os-name": "Windows", 
-                    "x-warp-os-version": "11 (26100)",
+                    "x-warp-client-version": os.getenv("CLIENT_VERSION", "v0.2025.08.06.08.12.stable_02"),
+                    "x-warp-os-category": os.getenv("OS_CATEGORY", "Windows"),
+                    "x-warp-os-name": os.getenv("OS_NAME", "Windows"),
+                    "x-warp-os-version": os.getenv("OS_VERSION", "11 (26100)"),
                     "authorization": f"Bearer {jwt}",
                     "content-length": str(len(protobuf_bytes)),
                 }

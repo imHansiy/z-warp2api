@@ -6,6 +6,7 @@
 """
 
 import asyncio
+import os
 import time
 import uuid
 import threading
@@ -28,8 +29,10 @@ class SessionContext:
     created_at: datetime
     last_used: datetime
     
-    def is_expired(self, timeout_minutes: int = 30) -> bool:
+    def is_expired(self, timeout_minutes: int = None) -> bool:
         """检查会话是否超时"""
+        if timeout_minutes is None:
+            timeout_minutes = int(os.getenv("SESSION_TIMEOUT_MINUTES", "30"))
         return datetime.now() - self.last_used > timedelta(minutes=timeout_minutes)
 
 
@@ -213,7 +216,7 @@ class PoolManager:
     async def _emergency_replenish(self):
         """紧急补充账号（小批量快速补充）"""
         logger.warning("执行紧急账号补充...")
-        emergency_count = min(5, config.BATCH_REGISTER_SIZE)  # 紧急时只补充少量账号
+        emergency_count = min(int(os.getenv("EMERGENCY_REPLENISH_COUNT", "5")), config.BATCH_REGISTER_SIZE)  # 紧急时只补充少量账号
         await self._replenish_accounts(emergency_count)
     
     async def _maintenance_loop(self):
@@ -225,14 +228,15 @@ class PoolManager:
                 await self._maintenance_cycle()
                 
                 # 等待一定时间后再次检查
-                await asyncio.sleep(60)  # 每分钟检查一次
+                maintenance_interval = int(os.getenv("MAINTENANCE_INTERVAL_SECONDS", "60"))
+                await asyncio.sleep(maintenance_interval)  # 检查间隔
                 
             except asyncio.CancelledError:
                 logger.info("维护任务被取消")
                 break
             except Exception as e:
                 logger.error(f"维护任务异常: {e}")
-                await asyncio.sleep(30)  # 出错后等待30秒再继续
+                await asyncio.sleep(int(os.getenv("MAINTENANCE_INTERVAL_SECONDS", "60")) // 2)  # 出错后等待一半时间再继续
         
         logger.info("号池维护任务结束")
     

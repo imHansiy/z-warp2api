@@ -7,6 +7,7 @@ Firebase API密钥池管理器
 """
 
 import json
+import os
 import time
 import random
 import requests
@@ -70,7 +71,8 @@ class FirebaseAPIPool:
         except Exception as e:
             print(f"❌ 加载远程配置失败: {e}")
             # 使用默认密钥作为后备
-            self.api_keys = ["AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"]
+            default_key = os.getenv("FIREBASE_DEFAULT_API_KEY", "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs")
+            self.api_keys = [default_key]
     
     def _init_usage_stats(self):
         """初始化使用统计"""
@@ -214,11 +216,14 @@ class FirebaseAPIPool:
                 
                 # 发起请求（支持可选代理）
                 if method.upper() == "POST":
-                    response = session.post(full_url, json=data, headers=default_headers, timeout=30, proxies=proxies)
+                    request_timeout = int(os.getenv("FIREBASE_REQUEST_TIMEOUT", "30"))
+                    response = session.post(full_url, json=data, headers=default_headers, timeout=request_timeout, proxies=proxies)
                 elif method.upper() == "GET":
-                    response = session.get(full_url, headers=default_headers, timeout=30, proxies=proxies)
+                    request_timeout = int(os.getenv("FIREBASE_REQUEST_TIMEOUT", "30"))
+                    response = session.get(full_url, headers=default_headers, timeout=request_timeout, proxies=proxies)
                 else:
-                    response = session.request(method, full_url, json=data, headers=default_headers, timeout=30, proxies=proxies)
+                    request_timeout = int(os.getenv("FIREBASE_REQUEST_TIMEOUT", "30"))
+                    response = session.request(method, full_url, json=data, headers=default_headers, timeout=request_timeout, proxies=proxies)
                 
                 # 检查响应
                 if response.status_code == 200:
@@ -293,10 +298,10 @@ class FirebaseAPIPool:
     def _generate_random_user_agent(self) -> str:
         """生成随机User-Agent"""
         user_agents = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15'
+            os.getenv("USER_AGENT_1", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+            os.getenv("USER_AGENT_2", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+            os.getenv("USER_AGENT_3", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"),
+            os.getenv("USER_AGENT_4", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15")
         ]
         return random.choice(user_agents)
     
