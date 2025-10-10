@@ -263,9 +263,22 @@ async def _create_anonymous_user() -> dict:
 
 
 async def _exchange_id_token_for_refresh_token(id_token: str) -> dict:
+    # 优先使用从refresh URL中提取的API密钥
     key = _extract_google_api_key_from_refresh_url()
-    default_key = os.getenv("FIREBASE_DEFAULT_API_KEY", "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs")
-    url = f"{_IDENTITY_TOOLKIT_BASE}?key={key}" if key else f"{_IDENTITY_TOOLKIT_BASE}?key={default_key}"
+    
+    # 获取Firebase API密钥配置
+    firebase_keys = os.getenv("FIREBASE_API_KEYS")
+    if firebase_keys:
+        # 使用第一个密钥作为默认密钥
+        keys = [k.strip() for k in firebase_keys.split(",") if k.strip()]
+        default_key = keys[0] if keys else "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"
+    else:
+        default_key = "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs"
+    
+    # 使用提取的密钥或默认密钥
+    api_key = key if key else default_key
+    url = f"{_IDENTITY_TOOLKIT_BASE}?key={api_key}"
+    
     headers = {
         "accept-encoding": "gzip, br",
         "content-type": "application/x-www-form-urlencoded",
@@ -274,14 +287,21 @@ async def _exchange_id_token_for_refresh_token(id_token: str) -> dict:
         "x-warp-os-name": OS_NAME,
         "x-warp-os-version": OS_VERSION,
     }
+    
+    # 修复：使用正确的参数名
     form = {
         "returnSecureToken": "true",
-        "token": id_token,
+        "id_token": id_token,  # 使用id_token而不是token
     }
+    
     timeout = float(os.getenv("IDENTITY_TOOLKIT_TIMEOUT", "30.0"))
     async with httpx.AsyncClient(timeout=httpx.Timeout(timeout)) as client:
         resp = await client.post(url, headers=headers, data=form)
         if resp.status_code != 200:
+            logger.error(f"Firebase Identity Toolkit请求失败: HTTP {resp.status_code}")
+            logger.error(f"请求URL: {url}")
+            logger.error(f"请求参数: {form}")
+            logger.error(f"响应内容: {resp.text[:200]}")
             raise RuntimeError(f"signInWithCustomToken failed: HTTP {resp.status_code} {resp.text[:200]}")
         return resp.json()
 

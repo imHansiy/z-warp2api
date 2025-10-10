@@ -164,7 +164,20 @@ class MoeMailClient:
                     proxy_manager.mark_proxy_failed()
                 except:
                     pass
-            raise Exception(f"创建邮箱失败: {e}")
+            
+            # 提供更详细的错误信息
+            error_msg = f"创建邮箱失败: {e}"
+            if hasattr(e, 'response') and e.response is not None:
+                if e.response.status_code == 401:
+                    error_msg = f"创建邮箱失败: API密钥无效或已过期 (HTTP 401)"
+                elif e.response.status_code == 403:
+                    error_msg = f"创建邮箱失败: 访问被拒绝，请检查API权限 (HTTP 403)"
+                elif e.response.status_code == 429:
+                    error_msg = f"创建邮箱失败: 请求频率过高，请稍后重试 (HTTP 429)"
+                elif e.response.status_code >= 500:
+                    error_msg = f"创建邮箱失败: 服务器内部错误 (HTTP {e.response.status_code})"
+            
+            raise Exception(error_msg)
     
     def get_emails(self) -> List[TempEmail]:
         """获取邮箱列表"""

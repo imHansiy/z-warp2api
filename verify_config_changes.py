@@ -76,7 +76,7 @@ def main():
         'BATCH_REGISTER_SIZE',
         'WARP_URL',
         'WARP_JWT',
-        'FIREBASE_DEFAULT_API_KEY',
+        'FIREBASE_API_KEY',
         'PROXY_TEST_URL',
         'USER_AGENT_1',
         'MOEMAIL_DOMAIN',

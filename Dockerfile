@@ -79,29 +79,45 @@ echo "[1/3] Starting Account Pool Service..."
 cd /app/account-pool-service
 if [ -f main.py ]; then
     python main.py > /app/logs/pool-service.log 2>&1 &
-    echo "      PID: $!"
+    POOL_PID=$!
+    echo "      PID: $POOL_PID"
 else
     echo "      WARNING: Account Pool Service not found, skipping..."
 fi
 
-# 等待初始化
-sleep 5
+# 等待账号池服务完全启动
+sleep 10
 
 # 启动Warp2API主服务
 echo "[2/3] Starting Warp2API Service..."
 cd /app/warp2api-main
-if [ -f server.py ]; then
-    python server.py > /app/logs/warp2api.log 2>&1 &
-    echo "      PID: $!"
-elif [ -f main.py ]; then
-    python main.py > /app/logs/warp2api.log 2>&1 &
-    echo "      PID: $!"
-else
-    echo "      ERROR: Warp2API service file not found!"
+# 确保端口8000没有被占用
+if netstat -tuln | grep :8000; then
+    echo "      WARNING: Port 8000 is already in use, trying to free it..."
+    pkill -f "python.*server.py" || true
+    pkill -f "python.*main.py" || true
+    sleep 2
 fi
 
-# 等待初始化
-sleep 5
+# 设置环境变量
+export HOST=0.0.0.0
+export PORT=8000
+
+if [ -f server.py ]; then
+    python server.py > /app/logs/warp2api.log 2>&1 &
+    WARP_PID=$!
+    echo "      PID: $WARP_PID"
+elif [ -f main.py ]; then
+    python main.py > /app/logs/warp2api.log 2>&1 &
+    WARP_PID=$!
+    echo "      PID: $WARP_PID"
+else
+    echo "      ERROR: Warp2API service file not found!"
+    exit 1
+fi
+
+# 等待Warp2API服务完全启动
+sleep 10
 
 # 启动OpenAI兼容服务
 echo "[3/3] Starting OpenAI Compatible Service..."
@@ -109,12 +125,46 @@ cd /app/warp2api-main
 # 在Docker环境中使用容器内网络
 export HOST=0.0.0.0
 export PORT=8080
-export WARP_BRIDGE_URL=http://localhost:8000
+export WARP_BRIDGE_URL=http://0.0.0.0:8000
 if [ -f start.py ]; then
     python start.py > /app/logs/openai-compat.log 2>&1 &
-    echo "      PID: $!"
+    OPENAI_PID=$!
+    echo "      PID: $OPENAI_PID"
 else
     echo "      WARNING: OpenAI Compatible Service not found, skipping..."
+fi
+
+# 等待所有服务启动
+sleep 10
+
+# 检查服务状态
+echo ""
+echo "========================================"
+echo "检查服务状态..."
+echo "========================================"
+
+if [ ! -z "$POOL_PID" ]; then
+    if kill -0 $POOL_PID 2>/dev/null; then
+        echo "✅ 账号池服务运行正常 (PID: $POOL_PID)"
+    else
+        echo "❌ 账号池服务启动失败"
+    fi
+fi
+
+if [ ! -z "$WARP_PID" ]; then
+    if kill -0 $WARP_PID 2>/dev/null; then
+        echo "✅ Warp2API服务运行正常 (PID: $WARP_PID)"
+    else
+        echo "❌ Warp2API服务启动失败"
+    fi
+fi
+
+if [ ! -z "$OPENAI_PID" ]; then
+    if kill -0 $OPENAI_PID 2>/dev/null; then
+        echo "✅ OpenAI兼容服务运行正常 (PID: $OPENAI_PID)"
+    else
+        echo "❌ OpenAI兼容服务启动失败"
+    fi
 fi
 
 echo ""

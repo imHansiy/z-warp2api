@@ -1,4 +1,51 @@
 #!/usr/bin/env python3
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+
+# 加载环境变量
+def load_env_file(env_file):
+    """加载.env文件"""
+    if os.path.exists(env_file):
+        with open(env_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    key = key.strip()
+                    value = value.strip()
+                    
+                    # 移除引号
+                    if value.startswith('"') and value.endswith('"'):
+                        value = value[1:-1]
+                    elif value.startswith("'") and value.endswith("'"):
+                        value = value[1:-1]
+                    
+                    os.environ[key] = value
+
+# 加载环境变量
+# 尝试多个可能的配置文件路径
+config_paths = [
+    '../config/production.env',
+    '../../config/production.env',
+    'config/production.env',
+    './config/production.env'
+]
+
+config_loaded = False
+for path in config_paths:
+    if os.path.exists(path):
+        print(f"📋 加载配置文件: {path}")
+        load_env_file(path)
+        config_loaded = True
+        break
+
+if not config_loaded:
+    print("⚠️ 未找到配置文件，使用默认配置")
+
+
 # -*- coding: utf-8 -*-
 """
 独立账号池服务

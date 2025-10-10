@@ -6,7 +6,23 @@
 """
 
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+
+
+def _get_firebase_api_keys() -> List[str]:
+    """
+    获取Firebase API密钥列表
+    支持配置一个或多个密钥，用逗号分隔
+    """
+    # 获取Firebase API密钥配置
+    firebase_keys = os.getenv("FIREBASE_API_KEYS")
+    if firebase_keys:
+        # 分割逗号分隔的密钥并去除空格
+        keys = [key.strip() for key in firebase_keys.split(",") if key.strip()]
+        return keys
+    
+    # 如果没有配置，返回空列表
+    return []
 
 
 def load_config() -> Dict[str, Any]:
@@ -27,10 +43,8 @@ def load_config() -> Dict[str, Any]:
         "auto_refresh": True,
         "check_interval": 5,
         "max_wait_time": 300,
-        "firebase_api_keys": [
-            os.getenv("FIREBASE_API_KEY_1")  # 不设置默认值，必须从环境变量获取
-        ],
-        "firebase_api_key": os.getenv("FIREBASE_API_KEY_1"),  # 不设置默认值，必须从环境变量获取
+        "firebase_api_keys": _get_firebase_api_keys(),
+        "firebase_api_key": _get_firebase_api_keys()[0] if _get_firebase_api_keys() else None,  # 从列表中获取第一个密钥
         # moemail 嵌套结构
         "moemail": {
             "base_url": os.getenv("MOEMAIL_URL", "https://moemail.007666.xyz"),

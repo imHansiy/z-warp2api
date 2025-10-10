@@ -163,10 +163,8 @@ class RemoteConfigService:
             "auto_refresh": True,
             "check_interval": 5,
             "max_wait_time": 300,
-            "firebase_api_keys": [
-                os.getenv("FIREBASE_API_KEY_1")  # 不设置默认值，必须从环境变量获取
-            ],
-            "firebase_api_key": os.getenv("FIREBASE_API_KEY_1"),  # 不设置默认值，必须从环境变量获取
+            "firebase_api_keys": _get_firebase_api_keys(),
+            "firebase_api_key": os.getenv("FIREBASE_API_KEY"),  # 不设置默认值，必须从环境变量获取
             # 添加 moemail 嵌套配置结构，匹配GUI代码的期望
             "moemail": {
                 "base_url": os.getenv("MOEMAIL_URL", "https://moemail.007666.xyz"),

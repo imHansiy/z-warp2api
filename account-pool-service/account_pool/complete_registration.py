@@ -115,7 +115,9 @@ class CompleteScriptRegistration:
             'Referer': os.getenv("WARP_BASE_URL", "https://app.warp.dev/") + "/",
             'Sec-Ch-Ua': f'"Chromium";v="{chrome_major}", "Google Chrome";v="{chrome_major}", "Not=A?Brand";v="99"',
             'Sec-Ch-Ua-Mobile': '?0',
-            'Sec-Ch-Ua-Platform': '"macOS"'
+            'Sec-Ch-Ua-Platform': '"macOS"',
+            'x-client-version': 'Chrome/JsCore/11.10.0/FirebaseCore-web',
+            'x-firebase-gmpid': '1:13153726198:web:1cc16bca7287752f8e06d7'
         }
 
     def _generate_random_email_prefix(self) -> str:
@@ -233,8 +235,12 @@ class CompleteScriptRegistration:
                 "canHandleCodeInApp": True
             }
 
-            # 使用Firebase API密钥池发起请求
-            response = make_firebase_request(url, "POST", payload, max_retries=3)
+            # 使用Firebase API密钥池发起请求，传递必要的headers
+            headers = {
+                'Content-Type': 'application/json',
+                'x-client-version': 'Chrome/JsCore/11.10.0/FirebaseCore-web'
+            }
+            response = make_firebase_request(url, "POST", payload, headers, max_retries=3)
             
             if response.status_code == 200:
                 response_data = response.json()
@@ -333,7 +339,7 @@ class CompleteScriptRegistration:
         print(f"🔐 完成邮箱登录: {email_address}")
 
         try:
-            url = os.getenv("IDENTITY_TOOLKIT_BASE", "https://identitytoolkit.googleapis.com/v1/accounts:signInWithEmailLink")
+            url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithEmailLink"
 
             payload = {
                 "email": email_address,
@@ -350,8 +356,12 @@ class CompleteScriptRegistration:
             delay = random.uniform(1.5, 3.5)
             time.sleep(delay)
 
-            # 使用Firebase API密钥池发起请求
-            response = make_firebase_request(url, "POST", payload, max_retries=3)
+            # 使用Firebase API密钥池发起请求，传递必要的headers
+            headers = {
+                'Content-Type': 'application/json',
+                'x-client-version': 'Chrome/JsCore/11.10.0/FirebaseCore-web'
+            }
+            response = make_firebase_request(url, "POST", payload, headers, max_retries=3)
 
             print(f"  响应状态码: {response.status_code}")
 

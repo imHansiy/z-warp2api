@@ -7,6 +7,10 @@
 
 import os
 from typing import Dict, Any
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv('../config/production.env')
 
 
 class Config:
@@ -41,10 +45,21 @@ class Config:
     PROXY_REFRESH_INTERVAL = int(os.getenv("PROXY_REFRESH_INTERVAL", 300))  # 5分钟
     
     # Firebase配置
-    FIREBASE_API_KEYS = [
-        os.getenv("FIREBASE_API_KEY_1"),  # 不设置默认值，必须从环境变量获取
-        # 可以继续添加更多API密钥
-    ]
+    @classmethod
+    def get_firebase_api_keys(cls):
+        """
+        获取Firebase API密钥列表
+        支持配置一个或多个密钥，用逗号分隔
+        """
+        # 获取Firebase API密钥配置
+        firebase_keys = os.getenv("FIREBASE_API_KEYS")
+        if firebase_keys:
+            # 分割逗号分隔的密钥并去除空格
+            keys = [key.strip() for key in firebase_keys.split(",") if key.strip()]
+            return keys
+        
+        # 如果没有配置，返回空列表
+        return []
     
     # Warp API配置 - 严格按照参考实现
     WARP_BASE_URL = os.getenv("WARP_BASE_URL", "https://app.warp.dev")
@@ -75,12 +90,6 @@ class Config:
     RESPONSE_CACHE_TTL = int(os.getenv("RESPONSE_CACHE_TTL", 0))  # 响应缓存TTL（秒，0表示禁用）
     STREAM_CHUNK_DELAY = float(os.getenv("STREAM_CHUNK_DELAY", 0.005))  # 流响应延迟
 
-    @classmethod
-    def get_firebase_api_keys(cls) -> list:
-        """获取所有Firebase API密钥"""
-        keys = [key for key in cls.FIREBASE_API_KEYS if key]
-        default_key = os.getenv("FIREBASE_DEFAULT_API_KEY", "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs")
-        return keys if keys else [default_key]
     
     @classmethod
     def to_dict(cls) -> Dict[str, Any]:

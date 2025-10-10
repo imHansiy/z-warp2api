@@ -36,9 +36,7 @@
 - `WARP_BRIDGE_PORT` - Warp Bridge端口
 
 #### Firebase配置
-- `FIREBASE_API_KEY` - Firebase API密钥
-- `FIREBASE_API_KEY_1` - Firebase API密钥1
-- `FIREBASE_DEFAULT_API_KEY` - 默认Firebase API密钥
+- `FIREBASE_API_KEY` - Firebase API密钥（统一配置）
 - `FIREBASE_AUTH_URL` - Firebase认证URL
 
 #### 邮箱服务配置

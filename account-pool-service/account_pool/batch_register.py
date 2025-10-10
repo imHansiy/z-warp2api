@@ -52,7 +52,7 @@ class BatchRegister:
             self.config = {
                 'moemail_url': os.getenv('MOEMAIL_URL', 'https://moemail.007666.xyz'),
                 'moemail_api_key': os.getenv('MOEMAIL_API_KEY'),  # 不设置默认值，必须从环境变量获取
-                'firebase_api_keys': [os.getenv('FIREBASE_API_KEY_1')],  # 不设置默认值，必须从环境变量获取
+                'firebase_api_keys': self._get_firebase_api_keys(),  # 支持单个或多个密钥
                 'email_expiry_hours': int(os.getenv('EMAIL_EXPIRY_HOURS', '1'))
             }
         
@@ -255,6 +255,26 @@ class BatchRegister:
         
         try:
             print(f"🔄 [线程{thread_id}] 开始注册账号 #{index}...")
+            
+            # 检查邮箱服务是否可用
+            try:
+                moemail_client = MoeMailClient(
+                    self.config.get('moemail_url'),
+                    self.config.get('moemail_api_key')
+                )
+                # 尝试获取配置来测试连接
+                moemail_client.get_config()
+                print(f"✅ 邮箱服务连接正常")
+            except Exception as e:
+                print(f"⚠️ 邮箱服务不可用: {e}")
+                print(f"🔄 [线程{thread_id}] 跳过账号注册（邮箱服务不可用）")
+                return {
+                    'success': False,
+                    'index': index,
+                    'error': f'邮箱服务不可用: {str(e)}',
+                    'timestamp': time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'duration': time.time() - start_time
+                }
             
             # 创建CompleteScriptRegistration实例
             registrator = CompleteScriptRegistration()
