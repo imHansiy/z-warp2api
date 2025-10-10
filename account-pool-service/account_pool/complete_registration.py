@@ -116,8 +116,7 @@ class CompleteScriptRegistration:
             'Sec-Ch-Ua': f'"Chromium";v="{chrome_major}", "Google Chrome";v="{chrome_major}", "Not=A?Brand";v="99"',
             'Sec-Ch-Ua-Mobile': '?0',
             'Sec-Ch-Ua-Platform': '"macOS"',
-            'x-client-version': 'Chrome/JsCore/11.10.0/FirebaseCore-web',
-            'x-firebase-gmpid': '1:13153726198:web:1cc16bca7287752f8e06d7'
+            'x-client-version': 'Chrome/JsCore/11.10.0/FirebaseCore-web'
         }
 
     def _generate_random_email_prefix(self) -> str:
