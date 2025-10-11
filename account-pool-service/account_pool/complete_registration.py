@@ -19,10 +19,12 @@ try:
     from moemail_client import MoeMailClient
     from firebase_api_pool import FirebaseAPIPool, make_firebase_request, get_firebase_pool
     from simple_domain_selector import get_random_email_domain
+    from verisoul_client import get_verisoul_client, start_verisoul_session, end_verisoul_session
 except ImportError:
     from .moemail_client import MoeMailClient
     from .firebase_api_pool import FirebaseAPIPool, make_firebase_request, get_firebase_pool
     from .simple_domain_selector import get_random_email_domain
+    from .verisoul_client import get_verisoul_client, start_verisoul_session, end_verisoul_session
 
 class CompleteScriptRegistration:
     """完整脚本注册器"""
@@ -61,6 +63,9 @@ class CompleteScriptRegistration:
         self.session.headers.update(dynamic_headers)
 
         print(f"🔧 使用动态User-Agent: {dynamic_headers['User-Agent'][:50]}...")
+        
+        # 初始化Verisoul客户端
+        self.verisoul_client = get_verisoul_client()
         
         print("✅ 完整脚本注册器初始化完成")
 
@@ -456,11 +461,12 @@ class CompleteScriptRegistration:
             print(f"⚠️ 浏览器确认模拟失败: {e}")
             return {"success": False, "error": str(e)}
 
-    def run_complete_registration(self, custom_email: str = None) -> Dict[str, Any]:
+    def run_complete_registration(self, custom_email: str = None, enable_verisoul: bool = True) -> Dict[str, Any]:
         """运行完整的注册流程
 
         Args:
             custom_email: 可选的自定义邮箱地址，如果提供则使用此邮箱而不创建临时邮箱
+            enable_verisoul: 是否启用Verisoul会话模拟
         """
         print("🚀 开始完整的脚本注册流程")
         print("=" * 80)
@@ -470,8 +476,40 @@ class CompleteScriptRegistration:
             "email_info": {},
             "signin_result": {},
             "browser_confirmation": {},
-            "final_tokens": {}
+            "final_tokens": {},
+            "verisoul_session": {}
         }
+
+        # 0. 启动Verisoul会话（如果启用）
+        if enable_verisoul:
+            print("\n步骤0: 启动Verisoul会话")
+            try:
+                if self.verisoul_client.start_session():
+                    result["verisoul_session"] = {
+                        "enabled": True,
+                        "session_id": self.verisoul_client.get_session_id(),
+                        "status": "active"
+                    }
+                    print(f"✅ Verisoul会话启动成功，会话ID: {self.verisoul_client.get_session_id()}")
+                else:
+                    result["verisoul_session"] = {
+                        "enabled": True,
+                        "status": "failed"
+                    }
+                    print("⚠️ Verisoul会话启动失败，继续执行注册流程")
+            except Exception as e:
+                result["verisoul_session"] = {
+                    "enabled": True,
+                    "status": "error",
+                    "error": str(e)
+                }
+                print(f"⚠️ Verisoul会话异常: {e}，继续执行注册流程")
+        else:
+            result["verisoul_session"] = {
+                "enabled": False,
+                "status": "disabled"
+            }
+            print("⚠️ Verisoul会话已禁用")
 
         # 1. 获取邮箱地址（创建临时邮箱或使用自定义邮箱）
         if custom_email:
@@ -582,6 +620,15 @@ class CompleteScriptRegistration:
 
         result["success"] = True
 
+        # 结束Verisoul会话（如果启用）
+        if enable_verisoul and result["verisoul_session"].get("enabled"):
+            try:
+                self.verisoul_client.end_session()
+                result["verisoul_session"]["status"] = "ended"
+                print("✅ Verisoul会话已结束")
+            except Exception as e:
+                print(f"⚠️ 结束Verisoul会话异常: {e}")
+
         print("\n" + "=" * 80)
         print("🎯 完整脚本注册流程成功完成")
         print("=" * 80)
@@ -590,6 +637,8 @@ class CompleteScriptRegistration:
         print(f"✅ 是否新用户: {result['final_tokens']['is_new_user']}")
         print(f"✅ 已注册: {result['final_tokens']['registered']}")
         print(f"✅ 浏览器确认: {result['final_tokens']['browser_confirmed']}")
+        if result["verisoul_session"].get("enabled"):
+            print(f"✅ Verisoul会话: {result['verisoul_session'].get('status', 'unknown')}")
         print(f"✅ ID Token: {result['final_tokens']['id_token'][:50]}...")
         print(f"✅ Refresh Token: {result['final_tokens']['refresh_token'][:50]}...")
 

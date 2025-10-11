@@ -1,0 +1,46 @@
+{
+  "success": true,
+  "email_info": {
+    "address": "moonfh2w8x0i@hansiy.net",
+    "id": "76994487-23b3-455a-b7af-952b988f24fd",
+    "prefix": "moonfh2w8x0i"
+  },
+  "signin_result": {
+    "success": true,
+    "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImE1YTAwNWU5N2NiMWU0MjczMDBlNTJjZGQ1MGYwYjM2Y2Q4MDYyOWIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vYXN0cmFsLWZpZWxkLTI5NDYyMSIsImF1ZCI6ImFzdHJhbC1maWVsZC0yOTQ2MjEiLCJhdXRoX3RpbWUiOjE3NjAxNTc2NDMsInVzZXJfaWQiOiIzZWI1cVYyM2RSU09MYlhNSUlENnlpM0tYbjIzIiwic3ViIjoiM2ViNXFWMjNkUlNPTGJYTUlJRDZ5aTNLWG4yMyIsImlhdCI6MTc2MDE1NzY0MywiZXhwIjoxNzYwMTYxMjQzLCJlbWFpbCI6Im1vb25maDJ3OHgwaUBoYW5zaXkubmV0IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsibW9vbmZoMnc4eDBpQGhhbnNpeS5uZXQiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.FgDYtxVohbKHo-6_rSBgdnIogJqyGlfofrKtYVGne6-X2GMQW0wS49Lw-00UHVQcHEnSBlLdhAvQxoXKL_AlkXFs7klfNib6wBASKu7HOQ94kOTnKX_BCW0a0Lm6cWHet63WUtqB9au5OSVJhgOdQJHJlMfiLksh6Kbbu7OkTgysceZieyv8Xu3woYgoLLf-1C9R7QxEi1thxbp5F4icoNw5lejTKu9vcPE_PMV-ysLE0Bt43sBf9Ipk7yxttYkSxxJoMzlZSPEppPEkYAzkbRxBUr4y_od1c3uGtzq8KJKx31PF-DwUvkoy31BJWEfebRqTQhJiqiynfvZBeLVTVw",
+    "refresh_token": "AMf-vBzSDssLrH3mOdSMHKCNjAE-5GYcSpYNL3Yxz6H_lefrmoInrXQtWB-G5t_h-gbjpFeRULPJhWN14jY-DGEKfuFqBGPQyJbYAps-G3OYCRPD8ZF0O4ZCSaIA4f_JxBUkvLiK8bKbycXXmlSq1ft4DcsWjjjUonii3JQb1JmIHxgS3qfbnHq6R4Bw6aEfnsppeS0YqMbFwVASlM4VysFxYVFzhhb9l6jiNzzdPdwytwigLNQgyp0",
+    "expires_in": "3600",
+    "local_id": "3eb5qV23dRSOLbXMIID6yi3KXn23",
+    "email": "moonfh2w8x0i@hansiy.net",
+    "is_new_user": true,
+    "registered": false,
+    "raw_response": {
+      "kind": "identitytoolkit#EmailLinkSigninResponse",
+      "idToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImE1YTAwNWU5N2NiMWU0MjczMDBlNTJjZGQ1MGYwYjM2Y2Q4MDYyOWIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vYXN0cmFsLWZpZWxkLTI5NDYyMSIsImF1ZCI6ImFzdHJhbC1maWVsZC0yOTQ2MjEiLCJhdXRoX3RpbWUiOjE3NjAxNTc2NDMsInVzZXJfaWQiOiIzZWI1cVYyM2RSU09MYlhNSUlENnlpM0tYbjIzIiwic3ViIjoiM2ViNXFWMjNkUlNPTGJYTUlJRDZ5aTNLWG4yMyIsImlhdCI6MTc2MDE1NzY0MywiZXhwIjoxNzYwMTYxMjQzLCJlbWFpbCI6Im1vb25maDJ3OHgwaUBoYW5zaXkubmV0IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsibW9vbmZoMnc4eDBpQGhhbnNpeS5uZXQiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.FgDYtxVohbKHo-6_rSBgdnIogJqyGlfofrKtYVGne6-X2GMQW0wS49Lw-00UHVQcHEnSBlLdhAvQxoXKL_AlkXFs7klfNib6wBASKu7HOQ94kOTnKX_BCW0a0Lm6cWHet63WUtqB9au5OSVJhgOdQJHJlMfiLksh6Kbbu7OkTgysceZieyv8Xu3woYgoLLf-1C9R7QxEi1thxbp5F4icoNw5lejTKu9vcPE_PMV-ysLE0Bt43sBf9Ipk7yxttYkSxxJoMzlZSPEppPEkYAzkbRxBUr4y_od1c3uGtzq8KJKx31PF-DwUvkoy31BJWEfebRqTQhJiqiynfvZBeLVTVw",
+      "email": "moonfh2w8x0i@hansiy.net",
+      "refreshToken": "AMf-vBzSDssLrH3mOdSMHKCNjAE-5GYcSpYNL3Yxz6H_lefrmoInrXQtWB-G5t_h-gbjpFeRULPJhWN14jY-DGEKfuFqBGPQyJbYAps-G3OYCRPD8ZF0O4ZCSaIA4f_JxBUkvLiK8bKbycXXmlSq1ft4DcsWjjjUonii3JQb1JmIHxgS3qfbnHq6R4Bw6aEfnsppeS0YqMbFwVASlM4VysFxYVFzhhb9l6jiNzzdPdwytwigLNQgyp0",
+      "expiresIn": "3600",
+      "localId": "3eb5qV23dRSOLbXMIID6yi3KXn23",
+      "isNewUser": true
+    }
+  },
+  "browser_confirmation": {
+    "success": true,
+    "confirmed": true
+  },
+  "final_tokens": {
+    "email": "moonfh2w8x0i@hansiy.net",
+    "local_id": "3eb5qV23dRSOLbXMIID6yi3KXn23",
+    "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImE1YTAwNWU5N2NiMWU0MjczMDBlNTJjZGQ1MGYwYjM2Y2Q4MDYyOWIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vYXN0cmFsLWZpZWxkLTI5NDYyMSIsImF1ZCI6ImFzdHJhbC1maWVsZC0yOTQ2MjEiLCJhdXRoX3RpbWUiOjE3NjAxNTc2NDMsInVzZXJfaWQiOiIzZWI1cVYyM2RSU09MYlhNSUlENnlpM0tYbjIzIiwic3ViIjoiM2ViNXFWMjNkUlNPTGJYTUlJRDZ5aTNLWG4yMyIsImlhdCI6MTc2MDE1NzY0MywiZXhwIjoxNzYwMTYxMjQzLCJlbWFpbCI6Im1vb25maDJ3OHgwaUBoYW5zaXkubmV0IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsibW9vbmZoMnc4eDBpQGhhbnNpeS5uZXQiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJwYXNzd29yZCJ9fQ.FgDYtxVohbKHo-6_rSBgdnIogJqyGlfofrKtYVGne6-X2GMQW0wS49Lw-00UHVQcHEnSBlLdhAvQxoXKL_AlkXFs7klfNib6wBASKu7HOQ94kOTnKX_BCW0a0Lm6cWHet63WUtqB9au5OSVJhgOdQJHJlMfiLksh6Kbbu7OkTgysceZieyv8Xu3woYgoLLf-1C9R7QxEi1thxbp5F4icoNw5lejTKu9vcPE_PMV-ysLE0Bt43sBf9Ipk7yxttYkSxxJoMzlZSPEppPEkYAzkbRxBUr4y_od1c3uGtzq8KJKx31PF-DwUvkoy31BJWEfebRqTQhJiqiynfvZBeLVTVw",
+    "refresh_token": "AMf-vBzSDssLrH3mOdSMHKCNjAE-5GYcSpYNL3Yxz6H_lefrmoInrXQtWB-G5t_h-gbjpFeRULPJhWN14jY-DGEKfuFqBGPQyJbYAps-G3OYCRPD8ZF0O4ZCSaIA4f_JxBUkvLiK8bKbycXXmlSq1ft4DcsWjjjUonii3JQb1JmIHxgS3qfbnHq6R4Bw6aEfnsppeS0YqMbFwVASlM4VysFxYVFzhhb9l6jiNzzdPdwytwigLNQgyp0",
+    "expires_in": "3600",
+    "is_new_user": true,
+    "registered": false,
+    "browser_confirmed": true
+  },
+  "verisoul_session": {
+    "enabled": true,
+    "session_id": "a67823c1-b8f8-4f0e-94e8-ce98db5f02de",
+    "status": "ended"
+  }
+}
